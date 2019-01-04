@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Builder
-public class PlaceInfo {
+public class PlaceInHallInfo {
     Integer line;
     Integer place;
     Boolean isVip;

@@ -8,8 +8,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum CommonResponse {
-    DATA_UPDATED(200, "All data updated"),
-    QUERIES_DELETED(200, "All queries deleted"),
+    PLACE_BLOCKED(200, "The place blocked successfully"),
+    TABLES_UPDATED(200, "All tables updated"),
     ERROR(400, "Error");
 
     private int code;
