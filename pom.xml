@@ -11,6 +11,8 @@
 	<groupId>ru.api.moviepark</groupId>
 	<artifactId>movie_park_api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
 	<name>Movie-park</name>
 	<description>Demo project for Spring Boot</description>
 
@@ -86,3 +88,4 @@
 	</repositories>
 
 </project>
+
