@@ -9,8 +9,12 @@ import ru.api.moviepark.controller.valueobjects.CommonResponse;
 import ru.api.moviepark.controller.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.data.entities.SeancesEntity;
 import ru.api.moviepark.data.repositories.SeancesRepo;
+import ru.api.moviepark.services.valueobjects.AllSeancesViewPojo;
 import ru.api.moviepark.services.valueobjects.PlaceInHallInfo;
 
+import java.sql.Date;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +39,48 @@ public class DBPostgreService {
         this.seancesRepo = seancesRepo;
     }
 
+
+    private List<AllSeancesViewPojo> getSeancesPojoListFromRows(String sqlQuery) {
+        try {
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
+            List<AllSeancesViewPojo> pojoList = new ArrayList<>();
+            for (Map<String, Object> row : rows) {
+                Integer id = (Integer) row.get("id");
+
+                Date seanceDate = (Date) row.get("date");
+                Time startTime = (Time) row.get("start_time");
+                Time endTime = (Time) row.get("end_time");
+                String name = (String) row.get("name");
+                Integer hallId = (Integer) row.get("hall_id");
+                AllSeancesViewPojo pojo = AllSeancesViewPojo.builder()
+                        .id(id)
+                        .date(seanceDate)
+                        .startTime(startTime)
+                        .endTime(endTime)
+                        .name(name)
+                        .hallId(hallId)
+                        .build();
+                pojoList.add(pojo);
+            }
+            return pojoList;
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public List<AllSeancesViewPojo> getAllSeances() {
+        String sqlQuery = "select * from movie_park.all_seances_schedule;";
+        log.info("Executing sql query " + sqlQuery);
+        return getSeancesPojoListFromRows(sqlQuery);
+    }
+
+    public List<AllSeancesViewPojo> getAllSeancesForDate(LocalDate date){
+        String sqlQueryForm = "select * from movie_park.all_seances_schedule where date = '%s'";
+        String dateStr =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String sqlQuery = String.format(sqlQueryForm, dateStr);
+        log.info("Executing sql query " + sqlQuery);
+        return getSeancesPojoListFromRows(sqlQuery);
+    }
 
     /**
      * Checking input data before creating seance.

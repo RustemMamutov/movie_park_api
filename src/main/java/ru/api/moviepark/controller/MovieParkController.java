@@ -7,16 +7,39 @@ import ru.api.moviepark.controller.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.controller.valueobjects.CommonResponse;
 import ru.api.moviepark.controller.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.services.DBPostgreService;
+import ru.api.moviepark.services.valueobjects.AllSeancesViewPojo;
+
+import java.time.LocalDate;
+import java.util.List;
 
 
 @Controller
 @Slf4j
+@RequestMapping("/movie-park")
 public class MovieParkController {
 
     private DBPostgreService service;
 
     public MovieParkController(DBPostgreService service) {
         this.service = service;
+    }
+
+    @GetMapping("/get-today-seances")
+    @ResponseBody
+    public List<AllSeancesViewPojo> getAllTodaySeances() {
+        return service.getAllSeancesForDate(LocalDate.now());
+    }
+
+    @GetMapping("/get-tomorrow-seances")
+    @ResponseBody
+    public List<AllSeancesViewPojo> getAllTomorrowSeances() {
+        return service.getAllSeancesForDate(LocalDate.now().plusDays(1));
+    }
+
+    @GetMapping("/get-all-seances")
+    @ResponseBody
+    public List<AllSeancesViewPojo> getAllSeances() {
+        return service.getAllSeances();
     }
 
     @PostMapping("/add-seance")
