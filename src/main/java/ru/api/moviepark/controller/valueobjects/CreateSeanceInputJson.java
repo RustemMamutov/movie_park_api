@@ -2,6 +2,7 @@ package ru.api.moviepark.controller.valueobjects;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,9 +13,11 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Builder
 public class CreateSeanceInputJson {
 
     LocalDate date;
+
     @Column(name = "start_time")
     LocalTime startTime;
 

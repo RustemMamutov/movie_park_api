@@ -1,6 +1,7 @@
 package ru.api.moviepark.data.entities;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Getter
 @Entity
+@Builder
 @Table(name = "seances", schema = "movie_park")
 public class SeancesEntity {
     @Id

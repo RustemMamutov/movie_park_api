@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.api.moviepark.controller.valueobjects.BlockPlaceInputJson;
 import ru.api.moviepark.controller.valueobjects.CommonResponse;
+import ru.api.moviepark.controller.valueobjects.CreateSeanceInputJson;
 import ru.api.moviepark.services.DBPostgreService;
 
 
@@ -16,6 +17,19 @@ public class MovieParkController {
 
     public MovieParkController(DBPostgreService service) {
         this.service = service;
+    }
+
+    @PostMapping("/add-seance")
+    @ResponseBody
+    public CommonResponse addSeance(@RequestBody CreateSeanceInputJson inputJson) {
+        try {
+            service.addSeance(inputJson);
+            return CommonResponse.SEANCE_ADDED;
+        } catch (Exception e){
+            log.error(e.getMessage());
+            return CommonResponse.ERROR;
+        }
+
     }
 
     @PostMapping("/block-place")

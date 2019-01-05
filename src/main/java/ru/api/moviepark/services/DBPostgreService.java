@@ -5,9 +5,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.api.moviepark.controller.valueobjects.BlockPlaceInputJson;
+import ru.api.moviepark.controller.valueobjects.CommonResponse;
+import ru.api.moviepark.controller.valueobjects.CreateSeanceInputJson;
+import ru.api.moviepark.data.entities.SeancesEntity;
+import ru.api.moviepark.data.repositories.SeancesRepo;
 import ru.api.moviepark.services.valueobjects.PlaceInHallInfo;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +25,62 @@ public class DBPostgreService {
 
     private JdbcTemplate jdbcTemplate;
     private TransactionTemplate transactionTemplate;
+    private SeancesRepo seancesRepo;
 
     public DBPostgreService(JdbcTemplate jdbcTemplate,
-                            TransactionTemplate transactionTemplate) {
+                            TransactionTemplate transactionTemplate,
+                            SeancesRepo seancesRepo) {
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
+        this.seancesRepo = seancesRepo;
     }
+
+    /**
+     * Create new seance and add it to db.
+     * @param inputJson
+     */
+    public void addSeance(CreateSeanceInputJson inputJson){
+        LocalDate inputDate = inputJson.getDate();
+        int inputHallId = inputJson.getHallId();
+        LocalTime inputStartTime = inputJson.getStartTime();
+        LocalTime inputEndTime = inputJson.getEndTime();
+
+        List<SeancesEntity> allSeancesForDate = seancesRepo.findSeancesEntityByDateAndHallId(inputDate, inputHallId);
+        boolean isValid = true;
+        for (SeancesEntity entity : allSeancesForDate){
+            LocalTime localStartTime = entity.getStartTime();
+            LocalTime localEndTime = entity.getEndTime();
+            boolean startChecker = localStartTime.isBefore(inputStartTime) && inputStartTime.isBefore(localEndTime);
+            boolean endChecker = localStartTime.isBefore(inputEndTime) && inputEndTime.isBefore(localEndTime);
+            if (startChecker || endChecker){
+                isValid = false;
+            }
+            if (!isValid) {
+                break;
+            }
+        }
+
+        if (isValid){
+            Integer maxId = jdbcTemplate.queryForObject(
+                    "select max(id) from movie_park.seances", Integer.class);
+            int newSeanceId = maxId + 1;
+            SeancesEntity newSeanceEntity = SeancesEntity
+                    .builder()
+                    .id(newSeanceId)
+                    .date(inputDate)
+                    .startTime(inputStartTime)
+                    .endTime(inputEndTime)
+                    .movieId(inputJson.getMovieId())
+                    .hallId(inputHallId)
+                    .basePrice(inputJson.getBasePrice())
+                    .seanceTableExists(false)
+                    .build();
+            seancesRepo.save(newSeanceEntity);
+        } else {
+
+        }
+    }
+
 
     private List<Integer> getIdListFromRows(String sqlQuery) {
         try {
