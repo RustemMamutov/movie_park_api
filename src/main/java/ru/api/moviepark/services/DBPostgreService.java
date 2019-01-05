@@ -28,21 +28,25 @@ public class DBPostgreService {
     }
 
     private List<Integer> getIdListFromRows(String sqlQuery) {
-        log.info("Executing sql query " + sqlQuery);
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
-        List<Integer> idList = new ArrayList<>();
-        for (Map<String, Object> row : rows) {
-            Integer id = (Integer) row.get("id");
-            idList.add(id);
+        try {
+            log.info("Executing sql query " + sqlQuery);
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
+            List<Integer> idList = new ArrayList<>();
+            for (Map<String, Object> row : rows) {
+                Integer id = (Integer) row.get("id");
+                idList.add(id);
+            }
+            return idList;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
-        log.info("finished");
-        return idList;
     }
 
     /**
      * List of seances id for all days before today where seance table exists.
      */
-    private List<Integer> getSeancesIdWhereSeanceTableExistForSeancesBeforeToday(){
+    private List<Integer> getSeancesIdWhereSeanceTableExistForSeancesBeforeToday() {
         String today = LocalDate.now().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String sqlForm = "select id from movie_park.seances where seance_table_exists = 'true' and  date < '%s';";
@@ -53,9 +57,10 @@ public class DBPostgreService {
 
     /**
      * List of seances id for today and tomorrow where seance table doesn't exist.
+     *
      * @return
      */
-    private List<Integer> getSeancesIdWhereSeanceTableDoesntExistTodayAndTomorrow(){
+    private List<Integer> getSeancesIdWhereSeanceTableDoesntExistTodayAndTomorrow() {
         String today = LocalDate.now().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String tomorrow = LocalDate.now().plusDays(1).format(
@@ -86,10 +91,11 @@ public class DBPostgreService {
 
     /**
      * Sql query for creating table by seance id.
+     *
      * @param seanceId - seance id
      * @return
      */
-    private String getCreateSeanceTableSqlQuery(int seanceId){
+    private String getCreateSeanceTableSqlQuery(int seanceId) {
         String tableName = "movie_park.seance" + seanceId;
         String sqlForm = "CREATE TABLE if not exists %s " +
                 "(line int4 not NULL, " +
@@ -102,13 +108,13 @@ public class DBPostgreService {
 
     /**
      * Fill existing seance table.
+     *
      * @param seanceId
      * @return
      */
-    private String getFillSeanceTableSqlQuery(int seanceId){
+    private String getFillSeanceTableSqlQuery(int seanceId) {
         String tableName = "movie_park.seance" + seanceId;
-        String sqlForm =
-                "insert into %s (" +
+        String sqlForm = "insert into %s (" +
                 "select " +
                 "halls.line, " +
                 "halls.place, " +
@@ -148,7 +154,6 @@ public class DBPostgreService {
                     return null;
                 });
             });
-            log.info("Finished");
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -158,7 +163,7 @@ public class DBPostgreService {
     /**
      * Delete all outdated tables.
      */
-    public void deleteOldSeanceTablesBeforeToday(){
+    public void deleteOldSeanceTablesBeforeToday() {
         try {
             log.info("Deleting tables for all days before today");
             List<Integer> idList = getSeancesIdWhereSeanceTableExistForSeancesBeforeToday();
@@ -172,7 +177,6 @@ public class DBPostgreService {
                     return null;
                 });
             });
-            log.info("Finished");
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -181,10 +185,11 @@ public class DBPostgreService {
 
     /**
      * Get info about all places in hall for current seance.
+     *
      * @param seanceId
      * @return
      */
-    public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId){
+    public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
         try {
             log.info("Getting full info for seance id = " + seanceId);
             String sqlForm = "select * from movie_park.seance%s;";
@@ -206,9 +211,8 @@ public class DBPostgreService {
                         .build();
                 placeInfoList.add(info);
             }
-            log.info("Finished");
             return placeInfoList;
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
@@ -216,9 +220,10 @@ public class DBPostgreService {
 
     /**
      * Block the place in hall for current seance.
+     *
      * @param inputJson
      */
-    public void blockPlaceOnSeance(BlockPlaceInputJson inputJson){
+    public void blockPlaceOnSeance(BlockPlaceInputJson inputJson) {
         try {
             log.info("Blocking place in seance");
             String tableName = "movie_park.seance" + inputJson.getSeanceId();
@@ -229,8 +234,7 @@ public class DBPostgreService {
                 jdbcTemplate.execute(sql);
                 return null;
             });
-            log.info("Finished");
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
