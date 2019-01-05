@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Getter
 @Builder
-public class CreateSeanceInputJson {
+public class CreateSeanceInput {
 
     LocalDate date;
 

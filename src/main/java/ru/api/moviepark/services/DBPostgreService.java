@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import ru.api.moviepark.controller.valueobjects.BlockPlaceInputJson;
+import ru.api.moviepark.controller.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.controller.valueobjects.CommonResponse;
-import ru.api.moviepark.controller.valueobjects.CreateSeanceInputJson;
+import ru.api.moviepark.controller.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.data.entities.SeancesEntity;
 import ru.api.moviepark.data.repositories.SeancesRepo;
 import ru.api.moviepark.services.valueobjects.PlaceInHallInfo;
@@ -35,50 +35,78 @@ public class DBPostgreService {
         this.seancesRepo = seancesRepo;
     }
 
+
     /**
-     * Create new seance and add it to db.
+     * Checking input data before creating seance.
      * @param inputJson
+     * @return
      */
-    public void addSeance(CreateSeanceInputJson inputJson){
+    private CommonResponse checkCreateSeanceInput(CreateSeanceInput inputJson){
         LocalDate inputDate = inputJson.getDate();
+        if (inputDate.isBefore(LocalDate.now())){
+            return CommonResponse.INVALID_DATE;
+        }
+
+        String movieIdSqlQuery = "select count(id) from movie_park.movies where id = " + inputJson.getMovieId();
+        Integer count = jdbcTemplate.queryForObject(movieIdSqlQuery, Integer.class);
+        if (count == 0){
+            return CommonResponse.INVALID_MOVIE;
+        }
+
+        String hallIdSqlQuery = "select count(hall_id) from movie_park.halls where hall_id = " + inputJson.getHallId();
+        count = jdbcTemplate.queryForObject(hallIdSqlQuery, Integer.class);
+        if (count == 0){
+            return CommonResponse.INVALID_HALL;
+        }
+
+        if (inputJson.getBasePrice() <= 0){
+            return CommonResponse.INVALID_PRICE;
+        }
+
         int inputHallId = inputJson.getHallId();
         LocalTime inputStartTime = inputJson.getStartTime();
         LocalTime inputEndTime = inputJson.getEndTime();
 
         List<SeancesEntity> allSeancesForDate = seancesRepo.findSeancesEntityByDateAndHallId(inputDate, inputHallId);
-        boolean isValid = true;
         for (SeancesEntity entity : allSeancesForDate){
             LocalTime localStartTime = entity.getStartTime();
             LocalTime localEndTime = entity.getEndTime();
             boolean startChecker = localStartTime.isBefore(inputStartTime) && inputStartTime.isBefore(localEndTime);
             boolean endChecker = localStartTime.isBefore(inputEndTime) && inputEndTime.isBefore(localEndTime);
             if (startChecker || endChecker){
-                isValid = false;
-            }
-            if (!isValid) {
-                break;
+                return CommonResponse.INVALID_TIME_PERIOD;
             }
         }
 
-        if (isValid){
-            Integer maxId = jdbcTemplate.queryForObject(
-                    "select max(id) from movie_park.seances", Integer.class);
-            int newSeanceId = maxId + 1;
-            SeancesEntity newSeanceEntity = SeancesEntity
-                    .builder()
-                    .id(newSeanceId)
-                    .date(inputDate)
-                    .startTime(inputStartTime)
-                    .endTime(inputEndTime)
-                    .movieId(inputJson.getMovieId())
-                    .hallId(inputHallId)
-                    .basePrice(inputJson.getBasePrice())
-                    .seanceTableExists(false)
-                    .build();
-            seancesRepo.save(newSeanceEntity);
-        } else {
+        return CommonResponse.VALID_DATA;
+    }
 
+    /**
+     * Create new seance and add it to db.
+     * @param inputJson
+     */
+    public CommonResponse addSeance(CreateSeanceInput inputJson){
+        CommonResponse response = checkCreateSeanceInput(inputJson);
+        if (!response.equals(CommonResponse.VALID_DATA)){
+            return response;
         }
+
+        Integer maxId = jdbcTemplate.queryForObject(
+                "select max(id) from movie_park.seances", Integer.class);
+        int newSeanceId = maxId + 1;
+        SeancesEntity newSeanceEntity = SeancesEntity
+                .builder()
+                .id(newSeanceId)
+                .date(inputJson.getDate())
+                .startTime(inputJson.getStartTime())
+                .endTime(inputJson.getEndTime())
+                .movieId(inputJson.getMovieId())
+                .hallId(inputJson.getHallId())
+                .basePrice(inputJson.getBasePrice())
+                .seanceTableExists(false)
+                .build();
+        seancesRepo.save(newSeanceEntity);
+        return CommonResponse.SEANCE_ADDED;
     }
 
 
@@ -278,7 +306,7 @@ public class DBPostgreService {
      *
      * @param inputJson
      */
-    public void blockPlaceOnSeance(BlockPlaceInputJson inputJson) {
+    public void blockPlaceOnSeance(BlockPlaceInput inputJson) {
         try {
             log.info("Blocking place in seance");
             String tableName = "movie_park.seance" + inputJson.getSeanceId();

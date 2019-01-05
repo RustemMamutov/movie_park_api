@@ -10,7 +10,7 @@ import javax.persistence.Column;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class BlockPlaceInputJson {
+public class BlockPlaceInput {
     @Column(name = "seanceId")
     private Integer seanceId;
 

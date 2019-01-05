@@ -3,9 +3,9 @@ package ru.api.moviepark.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import ru.api.moviepark.controller.valueobjects.BlockPlaceInputJson;
+import ru.api.moviepark.controller.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.controller.valueobjects.CommonResponse;
-import ru.api.moviepark.controller.valueobjects.CreateSeanceInputJson;
+import ru.api.moviepark.controller.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.services.DBPostgreService;
 
 
@@ -21,20 +21,13 @@ public class MovieParkController {
 
     @PostMapping("/add-seance")
     @ResponseBody
-    public CommonResponse addSeance(@RequestBody CreateSeanceInputJson inputJson) {
-        try {
-            service.addSeance(inputJson);
-            return CommonResponse.SEANCE_ADDED;
-        } catch (Exception e){
-            log.error(e.getMessage());
-            return CommonResponse.ERROR;
-        }
-
+    public CommonResponse addSeance(@RequestBody CreateSeanceInput inputJson) {
+        return service.addSeance(inputJson);
     }
 
     @PostMapping("/block-place")
     @ResponseBody
-    public CommonResponse blockPlace(@RequestBody BlockPlaceInputJson inputJson) {
+    public CommonResponse blockPlace(@RequestBody BlockPlaceInput inputJson) {
         try {
             service.blockPlaceOnSeance(inputJson);
             return CommonResponse.PLACE_BLOCKED;
