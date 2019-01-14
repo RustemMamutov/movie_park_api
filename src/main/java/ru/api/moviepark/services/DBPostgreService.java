@@ -1,6 +1,7 @@
 package ru.api.moviepark.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Local;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -69,15 +70,17 @@ public class DBPostgreService {
     }
 
     public List<AllSeancesViewPojo> getAllSeances() {
-        String sqlQuery = "select * from movie_park.all_seances_schedule;";
+        String tableName = getDestinationTableName(Tables.SEANCES_VIEW);
+        String sqlQuery = String.format("select * from %s;", tableName);
         log.info("Executing sql query " + sqlQuery);
         return getSeancesPojoListFromRows(sqlQuery);
     }
 
     public List<AllSeancesViewPojo> getAllSeancesForDate(LocalDate date){
-        String sqlQueryForm = "select * from movie_park.all_seances_schedule where date = '%s'";
+        String tableName = getDestinationTableName(Tables.SEANCES_VIEW);
+        String sqlQueryForm = "select * from %s where date = '%s'";
         String dateStr =  date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String sqlQuery = String.format(sqlQueryForm, dateStr);
+        String sqlQuery = String.format(sqlQueryForm, tableName, dateStr);
         log.info("Executing sql query " + sqlQuery);
         return getSeancesPojoListFromRows(sqlQuery);
     }
@@ -93,13 +96,17 @@ public class DBPostgreService {
             return CommonResponse.INVALID_DATE;
         }
 
-        String movieIdSqlQuery = "select count(id) from movie_park.movies where id = " + inputJson.getMovieId();
+        String tableName = getDestinationTableName(Tables.MOVIES);
+        String movieIdSqlQuery = String.format("select count(id) from %s where id = %s",
+                tableName, inputJson.getMovieId());
         Integer count = jdbcTemplate.queryForObject(movieIdSqlQuery, Integer.class);
         if (count == 0){
             return CommonResponse.INVALID_MOVIE;
         }
 
-        String hallIdSqlQuery = "select count(hall_id) from movie_park.halls where hall_id = " + inputJson.getHallId();
+        tableName = getDestinationTableName(Tables.HALLS);
+        String hallIdSqlQuery = String.format("select count(id) from %s where id = %s",
+                tableName, inputJson.getHallId());
         count = jdbcTemplate.queryForObject(hallIdSqlQuery, Integer.class);
         if (count == 0){
             return CommonResponse.INVALID_HALL;
@@ -137,8 +144,9 @@ public class DBPostgreService {
             return response;
         }
 
-        Integer maxId = jdbcTemplate.queryForObject(
-                "select max(id) from movie_park.seances", Integer.class);
+        String tableName = getDestinationTableName(Tables.SEANCES_TABLE);
+        String maxIdSqlQuery = String.format("select max(id) from %s;", tableName);
+        Integer maxId = jdbcTemplate.queryForObject(maxIdSqlQuery, Integer.class);
         int newSeanceId = maxId + 1;
         SeancesEntity newSeanceEntity = SeancesEntity
                 .builder()
@@ -149,102 +157,64 @@ public class DBPostgreService {
                 .movieId(inputJson.getMovieId())
                 .hallId(inputJson.getHallId())
                 .basePrice(inputJson.getBasePrice())
-                .seanceTableExists(false)
                 .build();
         seancesRepo.save(newSeanceEntity);
         return CommonResponse.SEANCE_ADDED;
     }
 
-
-    private List<Integer> getIdListFromRows(String sqlQuery) {
-        try {
-            log.info("Executing sql query " + sqlQuery);
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
-            List<Integer> idList = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                Integer id = (Integer) row.get("id");
-                idList.add(id);
-            }
-            return idList;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * List of seances id for all days before today where seance table exists.
-     */
-    private List<Integer> getSeancesIdWhereSeanceTableExistForSeancesBeforeToday() {
-        String today = LocalDate.now().format(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String sqlForm = "select id from movie_park.seances where seance_table_exists = 'true' and  date < '%s';";
-        String sqlQuery = String.format(sqlForm, today);
-
-        return getIdListFromRows(sqlQuery);
-    }
-
-    /**
-     * List of seances id for today and tomorrow where seance table doesn't exist.
-     *
-     * @return
-     */
-    private List<Integer> getSeancesIdWhereSeanceTableDoesntExistTodayAndTomorrow() {
-        String today = LocalDate.now().format(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String tomorrow = LocalDate.now().plusDays(1).format(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String sqlForm = "select id from movie_park.seances where seance_table_exists = 'false' and " +
-                "'%s' <= date and date <= '%s';";
-        String sqlQuery = String.format(sqlForm, today, tomorrow);
-
-        return getIdListFromRows(sqlQuery);
-    }
-
     private String getDestinationTableName(Tables table) {
         switch (table) {
             case HALLS:
-                return "movie_park.halls";
+                return "movie_park1.halls";
             case MOVIES:
-                return "movie_park.movies";
+                return "movie_park1.movies";
             case PRICES_DELTA:
-                return "movie_park.prices_delta";
+                return "movie_park1.prices_delta";
             case SEANCES_TABLE:
-                return "movie_park.seances";
+                return "movie_park1.seances";
             case SEANCES_VIEW:
-                return "movie_park.seances_schedule";
+                return "movie_park1.all_seances_schedule";
             default:
                 return "";
         }
     }
 
     /**
-     * Sql query for creating table by seance id.
-     *
-     * @param seanceId - seance id
+     * Sql query for creating schedule table for day.
+     * @param date
      * @return
      */
-    private String getCreateSeanceTableSqlQuery(int seanceId) {
-        String tableName = "movie_park.seance" + seanceId;
-        String sqlForm = "CREATE TABLE if not exists %s " +
-                "(line int4 not NULL, " +
-                "place int4 not NULL, " +
+    private String getCreateDayScheduleTableSqlQuery(LocalDate date) {
+        String todayStr = date.format(
+                DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String tableName = "movie_park1.schedule_" + todayStr;
+
+        String sqlForm = "CREATE TABLE if not exists %s" +
+                "(id int4 NOT NULL, " +
+                "line int4 NOT NULL, " +
+                "place int4 NOT NULL, " +
                 "isvip bool NOT NULL, " +
-                "price int4 not NULL, " +
-                "isblocked bool not NULL)";
+                "price int4 NOT NULL, " +
+                "isblocked bool NOT NULL, " +
+                "PRIMARY KEY (id, line, place))";
         return String.format(sqlForm, tableName);
     }
 
     /**
      * Fill existing seance table.
-     *
-     * @param seanceId
+     * @param date
      * @return
      */
-    private String getFillSeanceTableSqlQuery(int seanceId) {
-        String tableName = "movie_park.seance" + seanceId;
-        String sqlForm = "insert into %s (" +
-                "select " +
+    private String getFillDayScheduleTableSqlQuery(LocalDate date) {
+        String todayStr = date.format(
+                DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String todayStrISO = date.format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String tableName = "movie_park1.schedule_" + todayStr;
+
+        String sqlForm = "insert into %s " +
+                "(select " +
+                "seances.id, " +
                 "halls.line, " +
                 "halls.place, " +
                 "halls.isvip, " +
@@ -260,107 +230,35 @@ public class DBPostgreService {
                 "and halls.isvip = prices_delta.isvip " +
                 "and prices_delta.start_time <= seances.start_time " +
                 "and seances.start_time <= prices_delta.end_time " +
-                "where seances.id = %s)";
-        return String.format(sqlForm, tableName, seanceId);
+                "where date = '%s')";
+        return String.format(sqlForm, tableName, todayStrISO);
     }
 
     /**
-     * Creating tables for all seances for today and tomorrow.
+     * Creating tables for today.
      */
-    public void createTablesForAllMissingSeancesTodayAndTomorrow() {
-        try {
-            log.info("Creating tables for today and tomorrow");
-            List<Integer> idList = getSeancesIdWhereSeanceTableDoesntExistTodayAndTomorrow();
-            idList.forEach(id -> {
-                String createTable = getCreateSeanceTableSqlQuery(id);
-                String fillTable = getFillSeanceTableSqlQuery(id);
-                String setExistenceAsTrue =
-                        "update movie_park.seances set seance_table_exists = true where id = " + id;
-                transactionTemplate.execute(status -> {
-                    jdbcTemplate.execute(createTable);
-                    jdbcTemplate.execute(fillTable);
-                    jdbcTemplate.execute(setExistenceAsTrue);
-                    return null;
-                });
-            });
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
+    public void createScheduleTablesForToday() {
+        log.info("Creating tables for today");
+        String createTableToday = getCreateDayScheduleTableSqlQuery(LocalDate.now());
+        String fillTableToday = getFillDayScheduleTableSqlQuery(LocalDate.now());
+        createAndFillScheduleTable(createTableToday, fillTableToday);
     }
 
     /**
-     * Delete all outdated tables.
+     * Creating tables for tomorrow.
      */
-    public void deleteOldSeanceTablesBeforeToday() {
-        try {
-            log.info("Deleting tables for all days before today");
-            List<Integer> idList = getSeancesIdWhereSeanceTableExistForSeancesBeforeToday();
-            idList.forEach(id -> {
-                String dropTableSql = "drop table movie_park.seance" + id;
-                String setExistenceAsFalse =
-                        "update movie_park.seances set seance_table_exists = false where id = " + id;
-                transactionTemplate.execute(status -> {
-                    jdbcTemplate.execute(dropTableSql);
-                    jdbcTemplate.execute(setExistenceAsFalse);
-                    return null;
-                });
-            });
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
+    public void createScheduleTablesForTomorrow() {
+        log.info("Creating tables for tomorrow");
+        String createTableTomorrow = getCreateDayScheduleTableSqlQuery(LocalDate.now().plusDays(1));
+        String fillTableTomorrow = getFillDayScheduleTableSqlQuery(LocalDate.now().plusDays(1));
+        createAndFillScheduleTable(createTableTomorrow, fillTableTomorrow);
     }
 
-    /**
-     * Get info about all places in hall for current seance.
-     *
-     * @param seanceId
-     * @return
-     */
-    public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
+    private void createAndFillScheduleTable(String createTableSql, String fillTableSql) {
         try {
-            log.info("Getting full info for seance id = " + seanceId);
-            String sqlForm = "select * from movie_park.seance%s;";
-            String sqlQuery = String.format(sqlForm, seanceId);
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
-            List<PlaceInHallInfo> placeInfoList = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                Integer line = (Integer) row.get("line");
-                Integer place = (Integer) row.get("place");
-                Boolean isVip = (Boolean) row.get("isvip");
-                Integer price = (Integer) row.get("price");
-                Boolean isBlocked = (Boolean) row.get("isblocked");
-                PlaceInHallInfo info = PlaceInHallInfo.builder()
-                        .line(line)
-                        .place(place)
-                        .isVip(isVip)
-                        .price(price)
-                        .isBlocked(isBlocked)
-                        .build();
-                placeInfoList.add(info);
-            }
-            return placeInfoList;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Block the place in hall for current seance.
-     *
-     * @param inputJson
-     */
-    public void blockPlaceOnSeance(BlockPlaceInput inputJson) {
-        try {
-            log.info("Blocking place in seance");
-            String tableName = "movie_park.seance" + inputJson.getSeanceId();
-            String sqlForm = "update %s set isblocked = true where line = %s and place = %s";
-            String sql = String.format(sqlForm, tableName,
-                    inputJson.getLine(), inputJson.getPlace());
             transactionTemplate.execute(status -> {
-                jdbcTemplate.execute(sql);
+                jdbcTemplate.execute(createTableSql);
+                jdbcTemplate.execute(fillTableSql);
                 return null;
             });
         } catch (Exception e) {
@@ -368,4 +266,60 @@ public class DBPostgreService {
             throw new RuntimeException(e);
         }
     }
+
+//    /**
+//     * Get info about all places in hall for current seance.
+//     * @param seanceId
+//     * @return
+//     */
+//    public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
+//        try {
+//            log.info("Getting full info for seance id = " + seanceId);
+//            String sqlForm = "select * from movie_park.seance%s;";
+//            String sqlQuery = String.format(sqlForm, seanceId);
+//            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
+//            List<PlaceInHallInfo> placeInfoList = new ArrayList<>();
+//            for (Map<String, Object> row : rows) {
+//                Integer line = (Integer) row.get("line");
+//                Integer place = (Integer) row.get("place");
+//                Boolean isVip = (Boolean) row.get("isvip");
+//                Integer price = (Integer) row.get("price");
+//                Boolean isBlocked = (Boolean) row.get("isblocked");
+//                PlaceInHallInfo info = PlaceInHallInfo.builder()
+//                        .line(line)
+//                        .place(place)
+//                        .isVip(isVip)
+//                        .price(price)
+//                        .isBlocked(isBlocked)
+//                        .build();
+//                placeInfoList.add(info);
+//            }
+//            return placeInfoList;
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    /**
+//     * Block the place in hall for current seance.
+//     *
+//     * @param inputJson
+//     */
+//    public void blockPlaceOnSeance(BlockPlaceInput inputJson) {
+//        try {
+//            log.info("Blocking place in seance");
+//            String tableName = "movie_park.seance" + inputJson.getSeanceId();
+//            String sqlForm = "update %s set isblocked = true where line = %s and place = %s";
+//            String sql = String.format(sqlForm, tableName,
+//                    inputJson.getLine(), inputJson.getPlace());
+//            transactionTemplate.execute(status -> {
+//                jdbcTemplate.execute(sql);
+//                return null;
+//            });
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e);
+//        }
+//    }
 }

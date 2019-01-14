@@ -48,25 +48,35 @@ public class MovieParkController {
         return service.addSeance(inputJson);
     }
 
-    @PostMapping("/block-place")
+//    @PostMapping("/block-place")
+//    @ResponseBody
+//    public CommonResponse blockPlace(@RequestBody BlockPlaceInput inputJson) {
+//        try {
+//            service.blockPlaceOnSeance(inputJson);
+//            return CommonResponse.PLACE_BLOCKED;
+//        } catch (Exception e){
+//            log.error(e.getMessage());
+//            return CommonResponse.ERROR;
+//        }
+//    }
+
+    @PostMapping("/create-today-schedule")
     @ResponseBody
-    public CommonResponse blockPlace(@RequestBody BlockPlaceInput inputJson) {
+    public CommonResponse createTodayScheduleTable(){
         try {
-            service.blockPlaceOnSeance(inputJson);
-            return CommonResponse.PLACE_BLOCKED;
+            service.createScheduleTablesForToday();
+            return CommonResponse.TABLES_UPDATED;
         } catch (Exception e){
             log.error(e.getMessage());
             return CommonResponse.ERROR;
         }
-
     }
 
-    @PostMapping("/update-tables")
+    @PostMapping("/create-tomorrow-schedule")
     @ResponseBody
-    public CommonResponse updateSeanceTables(){
+    public CommonResponse createTomorrowScheduleTable(){
         try {
-            service.createTablesForAllMissingSeancesTodayAndTomorrow();
-            service.deleteOldSeanceTablesBeforeToday();
+            service.createScheduleTablesForTomorrow();
             return CommonResponse.TABLES_UPDATED;
         } catch (Exception e){
             log.error(e.getMessage());

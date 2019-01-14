@@ -18,16 +18,6 @@ public class MovieParkApplicationTests {
 	@Autowired
 	private DBPostgreService service;
 
-//	@Test
-	public void test(){
-		service.createTablesForAllMissingSeancesTodayAndTomorrow();
-	}
-
-//	@Test
-	public void test1(){
-		service.deleteOldSeanceTablesBeforeToday();
-	}
-
 	@Test
 	public void test2(){
 		CreateSeanceInput inputJson = CreateSeanceInput.builder()
