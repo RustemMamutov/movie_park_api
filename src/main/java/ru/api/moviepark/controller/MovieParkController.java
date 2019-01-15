@@ -1,7 +1,6 @@
 package ru.api.moviepark.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.api.moviepark.controller.valueobjects.BlockPlaceInput;
