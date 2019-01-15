@@ -19,6 +19,12 @@ public class MovieParkApplicationTests {
 	private DBPostgreService service;
 
 	@Test
+	public void test(){
+		service.getSeanceFullInfo(81);
+		System.out.println();
+	}
+
+//	@Test
 	public void test2(){
 		CreateSeanceInput inputJson = CreateSeanceInput.builder()
 				.date(LocalDate.of(2019, 1, 5))

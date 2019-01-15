@@ -237,28 +237,14 @@ public class DBPostgreService {
     /**
      * Creating tables for today.
      */
-    public void createScheduleTablesForToday() {
+    public void createAndFillScheduleTableForDate(LocalDate date) {
         log.info("Creating tables for today");
-        String createTableToday = getCreateDayScheduleTableSqlQuery(LocalDate.now());
-        String fillTableToday = getFillDayScheduleTableSqlQuery(LocalDate.now());
-        createAndFillScheduleTable(createTableToday, fillTableToday);
-    }
-
-    /**
-     * Creating tables for tomorrow.
-     */
-    public void createScheduleTablesForTomorrow() {
-        log.info("Creating tables for tomorrow");
-        String createTableTomorrow = getCreateDayScheduleTableSqlQuery(LocalDate.now().plusDays(1));
-        String fillTableTomorrow = getFillDayScheduleTableSqlQuery(LocalDate.now().plusDays(1));
-        createAndFillScheduleTable(createTableTomorrow, fillTableTomorrow);
-    }
-
-    private void createAndFillScheduleTable(String createTableSql, String fillTableSql) {
+        String createTableSqlQuery = getCreateDayScheduleTableSqlQuery(date);
+        String fillTableSqlQuery = getFillDayScheduleTableSqlQuery(date);
         try {
             transactionTemplate.execute(status -> {
-                jdbcTemplate.execute(createTableSql);
-                jdbcTemplate.execute(fillTableSql);
+                jdbcTemplate.execute(createTableSqlQuery);
+                jdbcTemplate.execute(fillTableSqlQuery);
                 return null;
             });
         } catch (Exception e) {
@@ -267,59 +253,77 @@ public class DBPostgreService {
         }
     }
 
-//    /**
-//     * Get info about all places in hall for current seance.
-//     * @param seanceId
-//     * @return
-//     */
-//    public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
-//        try {
-//            log.info("Getting full info for seance id = " + seanceId);
-//            String sqlForm = "select * from movie_park.seance%s;";
-//            String sqlQuery = String.format(sqlForm, seanceId);
-//            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
-//            List<PlaceInHallInfo> placeInfoList = new ArrayList<>();
-//            for (Map<String, Object> row : rows) {
-//                Integer line = (Integer) row.get("line");
-//                Integer place = (Integer) row.get("place");
-//                Boolean isVip = (Boolean) row.get("isvip");
-//                Integer price = (Integer) row.get("price");
-//                Boolean isBlocked = (Boolean) row.get("isblocked");
-//                PlaceInHallInfo info = PlaceInHallInfo.builder()
-//                        .line(line)
-//                        .place(place)
-//                        .isVip(isVip)
-//                        .price(price)
-//                        .isBlocked(isBlocked)
-//                        .build();
-//                placeInfoList.add(info);
-//            }
-//            return placeInfoList;
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
-//    /**
-//     * Block the place in hall for current seance.
-//     *
-//     * @param inputJson
-//     */
-//    public void blockPlaceOnSeance(BlockPlaceInput inputJson) {
-//        try {
-//            log.info("Blocking place in seance");
-//            String tableName = "movie_park.seance" + inputJson.getSeanceId();
-//            String sqlForm = "update %s set isblocked = true where line = %s and place = %s";
-//            String sql = String.format(sqlForm, tableName,
-//                    inputJson.getLine(), inputJson.getPlace());
-//            transactionTemplate.execute(status -> {
-//                jdbcTemplate.execute(sql);
-//                return null;
-//            });
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//            throw new RuntimeException(e);
-//        }
-//    }
+
+    private LocalDate getDateForSeanceId(int seanceId){
+        String tableName = "movie_park1.seances";
+        String sqlForm = "select date from %s where id = %s";
+        String sqlQuery = String.format(sqlForm, tableName, seanceId);
+        LocalDate date = jdbcTemplate.queryForObject(sqlQuery, LocalDate.class);
+        return date;
+    }
+
+    /**
+     * Get info about all places in hall for current seance.
+     * @param seanceId
+     * @return
+     */
+    public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
+        LocalDate date = getDateForSeanceId(seanceId);
+        log.info("Getting full info for seance id = " + seanceId);
+        String todayStr = date.format(
+                DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String tableName = "movie_park1.schedule_" + todayStr;
+        String sqlForm = "select * from %s where id = %s";
+        String sqlQuery = String.format(sqlForm, tableName, seanceId);
+
+        try {
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
+            List<PlaceInHallInfo> placeInfoList = new ArrayList<>();
+            for (Map<String, Object> row : rows) {
+                Integer line = (Integer) row.get("line");
+                Integer place = (Integer) row.get("place");
+                Boolean isVip = (Boolean) row.get("isvip");
+                Integer price = (Integer) row.get("price");
+                Boolean isBlocked = (Boolean) row.get("isblocked");
+                PlaceInHallInfo info = PlaceInHallInfo.builder()
+                        .id(seanceId)
+                        .line(line)
+                        .place(place)
+                        .isVip(isVip)
+                        .price(price)
+                        .isBlocked(isBlocked)
+                        .build();
+                placeInfoList.add(info);
+            }
+            return placeInfoList;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Block the place in hall for current seance.
+     *
+     * @param inputJson
+     */
+    public void blockPlaceOnSeance(BlockPlaceInput inputJson) {
+        log.info("Blocking place in seance");
+        LocalDate date = getDateForSeanceId(inputJson.getSeanceId());
+        String todayStr = date.format(
+                DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String tableName = "movie_park1.schedule_" + todayStr;
+        String sqlForm = "update %s set isblocked = true where id = %s and line = %s and place = %s";
+        String sqlQuery = String.format(sqlForm, tableName, inputJson.getSeanceId(),
+                inputJson.getLine(), inputJson.getPlace());
+        try {
+            transactionTemplate.execute(status -> {
+                jdbcTemplate.execute(sqlQuery);
+                return null;
+            });
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 }
