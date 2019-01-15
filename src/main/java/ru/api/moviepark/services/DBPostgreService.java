@@ -189,7 +189,7 @@ public class DBPostgreService {
                 DateTimeFormatter.ofPattern("yyyyMMdd"));
         String tableName = "movie_park1.schedule_" + todayStr;
 
-        String sqlForm = "CREATE TABLE if not exists %s" +
+        String sqlForm = "CREATE TABLE %s" +
                 "(id int4 NOT NULL, " +
                 "line int4 NOT NULL, " +
                 "place int4 NOT NULL, " +
@@ -307,14 +307,14 @@ public class DBPostgreService {
      *
      * @param inputJson
      */
-    public void blockPlaceOnSeance(BlockPlaceInput inputJson) {
+    public void blockOrUnblockPlaceOnSeance(BlockPlaceInput inputJson) {
         log.info("Blocking place in seance");
         LocalDate date = getDateForSeanceId(inputJson.getSeanceId());
         String todayStr = date.format(
                 DateTimeFormatter.ofPattern("yyyyMMdd"));
         String tableName = "movie_park1.schedule_" + todayStr;
-        String sqlForm = "update %s set isblocked = true where id = %s and line = %s and place = %s";
-        String sqlQuery = String.format(sqlForm, tableName, inputJson.getSeanceId(),
+        String sqlForm = "update %s set isblocked = %s where id = %s and line = %s and place = %s";
+        String sqlQuery = String.format(sqlForm, tableName, inputJson.getIsBlocked(), inputJson.getSeanceId(),
                 inputJson.getLine(), inputJson.getPlace());
         try {
             transactionTemplate.execute(status -> {

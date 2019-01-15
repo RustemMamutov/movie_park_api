@@ -53,12 +53,16 @@ public class MovieParkController {
         return service.addSeance(inputJson);
     }
 
-    @PostMapping("/block-place")
+    @PostMapping("/block-unblock-place")
     @ResponseBody
-    public CommonResponse blockPlace(@RequestBody BlockPlaceInput inputJson) {
+    public CommonResponse blockOrUnblockPlace(@RequestBody BlockPlaceInput inputJson) {
         try {
-            service.blockPlaceOnSeance(inputJson);
-            return CommonResponse.PLACE_BLOCKED;
+            service.blockOrUnblockPlaceOnSeance(inputJson);
+            if (inputJson.getIsBlocked()) {
+                return CommonResponse.PLACE_BLOCKED;
+            } else {
+                return CommonResponse.PLACE_UNBLOCKED;
+            }
         } catch (Exception e){
             log.error(e.getMessage());
             return CommonResponse.ERROR;
@@ -74,7 +78,7 @@ public class MovieParkController {
             int month = Integer.parseInt(dateParams[1]);
             int day = Integer.parseInt(dateParams[2]);
             service.createAndFillScheduleTableForDate(LocalDate.of(year, month, day));
-            return CommonResponse.TABLES_UPDATED;
+            return CommonResponse.TABLE_CREATED_AND_FILLED;
         } catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
