@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.api.moviepark.controller.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.entities_valueobjects.CreateSeanceInput;
 import ru.api.moviepark.services.DBPostgreService;
 
 import java.time.LocalDate;

@@ -1,4 +1,4 @@
-package ru.api.moviepark.services.valueobjects;
+package ru.api.moviepark.entities_valueobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

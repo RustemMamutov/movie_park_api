@@ -1,4 +1,4 @@
-package ru.api.moviepark.controller.valueobjects;
+package ru.api.moviepark.entities_valueobjects;
 
 
 import lombok.AllArgsConstructor;
@@ -11,15 +11,8 @@ import javax.persistence.Column;
 @NoArgsConstructor
 @Getter
 public class BlockPlaceInput {
-    @Column(name = "seanceId")
     private Integer seanceId;
-
-    @Column(name = "line")
     private Integer line;
-
-    @Column(name = "place")
     private Integer place;
-
-    @Column(name = "isBlocked")
     private Boolean isBlocked;
 }
