@@ -1,4 +1,4 @@
-package ru.api.moviepark.controller.valueobjects;
+package ru.api.moviepark.entities_valueobjects;
 
 
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
 import java.time.LocalDate;
 import java.time.LocalTime;
 

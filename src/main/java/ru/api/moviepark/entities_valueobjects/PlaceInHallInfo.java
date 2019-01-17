@@ -1,4 +1,4 @@
-package ru.api.moviepark.services.valueobjects;
+package ru.api.moviepark.entities_valueobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 public class PlaceInHallInfo {
+    Integer id;
     Integer line;
     Integer place;
     Boolean isVip;

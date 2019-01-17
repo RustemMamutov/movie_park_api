@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.entities;
+package ru.api.moviepark.entities_valueobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +17,7 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Builder
-@Table(name = "seances", schema = "movie_park")
+@Table(name = "seances", schema = "movie_park1")
 public class SeancesEntity {
     @Id
     Integer id;
@@ -36,7 +36,4 @@ public class SeancesEntity {
 
     @Column(name = "base_price")
     Integer basePrice;
-
-    @Column(name = "seance_table_exists")
-    Boolean seanceTableExists;
 }

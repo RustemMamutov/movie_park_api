@@ -1,4 +1,4 @@
-package ru.api.moviepark.controller.valueobjects;
+package ru.api.moviepark.entities_valueobjects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,8 @@ import lombok.Getter;
 public enum CommonResponse {
     SEANCE_ADDED(200, "Seance added."),
     PLACE_BLOCKED(200, "The place blocked successfully."),
-    TABLES_UPDATED(200, "All tables updated."),
+    PLACE_UNBLOCKED(200, "The place unblocked successfully."),
+    TABLE_FILLED(200, "Table filled for this date."),
     VALID_DATA(200, ""),
     INVALID_DATE(400, "the date can't be before today."),
     INVALID_TIME_PERIOD(400, "invalid time period."),

@@ -1,7 +1,7 @@
-package ru.api.moviepark.data.repositories;
+package ru.api.moviepark.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.api.moviepark.data.entities.SeancesEntity;
+import ru.api.moviepark.entities_valueobjects.SeancesEntity;
 
 import java.time.LocalDate;
 import java.util.List;
