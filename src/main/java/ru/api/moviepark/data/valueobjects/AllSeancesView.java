@@ -1,4 +1,4 @@
-package ru.api.moviepark.entities_valueobjects;
+package ru.api.moviepark.data.valueobjects;
 
 
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import java.sql.Time;
 @NoArgsConstructor
 @Getter
 @Builder
-public class AllSeancesViewPojo {
+public class AllSeancesView {
 
     Integer id;
     Date date;

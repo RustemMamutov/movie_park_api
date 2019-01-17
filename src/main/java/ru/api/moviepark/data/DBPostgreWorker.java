@@ -1,93 +1,51 @@
-package ru.api.moviepark.services;
+package ru.api.moviepark.data;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.api.moviepark.entities_valueobjects.*;
-import ru.api.moviepark.repositories.SeancesRepo;
+import ru.api.moviepark.controller.CommonResponse;
+import ru.api.moviepark.data.rowmappers.AllSeancesViewRowMapper;
+import ru.api.moviepark.data.rowmappers.PlaceInHallInfoRowMapper;
+import ru.api.moviepark.data.entities.SeancesEntity;
+import ru.api.moviepark.data.valueobjects.*;
+import ru.api.moviepark.data.repositories.SeancesRepo;
 
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @Service
 @Slf4j
-public class DBPostgreService {
+public class DBPostgreWorker {
 
     private final JdbcTemplate jdbcTemplate;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final SeancesRepo seancesRepo;
 
-    public DBPostgreService(JdbcTemplate jdbcTemplate,
-                            NamedParameterJdbcTemplate namedParameterJdbcTemplate,
-                            SeancesRepo seancesRepo) {
+    public DBPostgreWorker(JdbcTemplate jdbcTemplate,
+                           SeancesRepo seancesRepo) {
         this.jdbcTemplate = jdbcTemplate;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.seancesRepo = seancesRepo;
     }
 
-    private List<AllSeancesViewPojo> getSeancesPojoListFromRows(String sqlQuery) {
-        try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
-            List<AllSeancesViewPojo> pojoList = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                Integer id = (Integer) row.get("id");
-
-                Date seanceDate = (Date) row.get("date");
-                Time startTime = (Time) row.get("start_time");
-                Time endTime = (Time) row.get("end_time");
-                String name = (String) row.get("name");
-                Integer hallId = (Integer) row.get("hall_id");
-                AllSeancesViewPojo pojo = AllSeancesViewPojo.builder()
-                        .id(id)
-                        .date(seanceDate)
-                        .startTime(startTime)
-                        .endTime(endTime)
-                        .name(name)
-                        .hallId(hallId)
-                        .build();
-                pojoList.add(pojo);
-            }
-            return pojoList;
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
-    public List<AllSeancesViewPojo> getAllSeances() {
+    public List<AllSeancesView> getAllSeances() {
         String tableName = getDestinationTableName(Tables.SEANCES_VIEW);
         String sqlQuery = String.format("select * from %s;", tableName);
-        log.info("Executing sql query " + sqlQuery);
-        return getSeancesPojoListFromRows(sqlQuery);
+        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
 
-    public List<AllSeancesViewPojo> getAllSeancesForDate(LocalDate date) {
+    public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
         String tableName = getDestinationTableName(Tables.SEANCES_VIEW);
-        String sqlQueryForm = "select * from %s where date = '%s'";
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String sqlQuery = String.format(sqlQueryForm, tableName, dateStr);
-        log.info("Executing sql query " + sqlQuery);
-        return getSeancesPojoListFromRows(sqlQuery);
+        String sqlQuery = String.format("select * from %s where date = '%s'", tableName, dateStr);
+        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
 
-    /**
-     * Checking input data before creating seance.
-     *
-     * @param inputJson
-     * @return
-     */
+
     private CommonResponse checkCreateSeanceInput(CreateSeanceInput inputJson) {
         LocalDate inputDate = inputJson.getDate();
         if (inputDate.isBefore(LocalDate.now())) {
@@ -132,12 +90,7 @@ public class DBPostgreService {
         return CommonResponse.VALID_DATA;
     }
 
-    /**
-     * Create new seance and add it to db.
-     *
-     * @param inputJson
-     */
-    public CommonResponse addSeance(CreateSeanceInput inputJson) {
+    public CommonResponse createAndAddNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
         if (!response.equals(CommonResponse.VALID_DATA)) {
             return response;
@@ -146,6 +99,9 @@ public class DBPostgreService {
         String tableName = getDestinationTableName(Tables.SEANCES_TABLE);
         String maxIdSqlQuery = String.format("select max(id) from %s;", tableName);
         Integer maxId = jdbcTemplate.queryForObject(maxIdSqlQuery, Integer.class);
+        if (maxId == null) {
+            maxId = 1;
+        }
         int newSeanceId = maxId + 1;
         SeancesEntity newSeanceEntity = SeancesEntity
                 .builder()
@@ -178,6 +134,14 @@ public class DBPostgreService {
         }
     }
 
+    private String getDestinationTableName(LocalDate date) {
+        return "movie_park1.schedule_" + date.format(DateTimeFormatter.ofPattern("yyyyMM"));
+    }
+
+    private String getTempTableName() {
+        return "temp_schedule_" + (int) (Math.random() * 10000000);
+    }
+
     /**
      * Fill existing seance table.
      */
@@ -207,15 +171,6 @@ public class DBPostgreService {
         return String.format(sqlForm, tableName, todayStrISO);
     }
 
-
-    private String getDestinationTableName(LocalDate date) {
-        return "movie_park1.schedule_" + date.format(DateTimeFormatter.ofPattern("yyyyMM"));
-    }
-
-    private String getTempTableName() {
-        return "temp_schedule_" + (int) (Math.random() * 10000000);
-    }
-
     private String getInsertOnConflictSql(String destinationTableName,
                                           String tempTableName) {
         return String.format(
@@ -224,12 +179,11 @@ public class DBPostgreService {
     }
 
     /**
-     * Creating tables for today.
+     * Filling table data for today.
      */
     @Transactional
     public void fillScheduleTableForDate(LocalDate date) {
         log.info("Creating tables for today");
-
 
         MapSqlParameterSource argMap = new MapSqlParameterSource()
                 .addValue("tempTable", getTempTableName())
@@ -238,14 +192,14 @@ public class DBPostgreService {
         String tempTableName = getTempTableName();
         String destinationTableName = getDestinationTableName(date);
 
-        String createTempTable = String.format("select * into temp %s from %s limit 0;",
+        String createTempTableSql = String.format("select * into temp %s from %s limit 0;",
                 tempTableName, destinationTableName);
         String fillTempTable = getFillScheduleTableForDaySqlQuery(date, tempTableName);
         String insertOnConflictSql = getInsertOnConflictSql(destinationTableName, tempTableName);
         String dropTempTableSql = String.format("drop table %s;", tempTableName);
 
         try {
-            jdbcTemplate.execute(createTempTable);
+            jdbcTemplate.execute(createTempTableSql);
             jdbcTemplate.execute(fillTempTable);
             jdbcTemplate.execute(insertOnConflictSql);
             jdbcTemplate.execute(dropTempTableSql);
@@ -257,9 +211,8 @@ public class DBPostgreService {
 
     private LocalDate getDateForSeanceId(int seanceId) {
         String tableName = "movie_park1.seances";
-        String sqlForm = "select date from %s where id = %s";
-        String sqlQuery = String.format(sqlForm, tableName, seanceId);
-        return jdbcTemplate.queryForObject(sqlQuery, LocalDate.class);
+        String sqlQuery = String.format("select date from %s where id = ?", tableName);
+        return jdbcTemplate.queryForObject(sqlQuery, new Object[]{seanceId}, LocalDate.class);
     }
 
     /**
@@ -271,32 +224,12 @@ public class DBPostgreService {
     public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
         LocalDate date = getDateForSeanceId(seanceId);
         log.info("Getting full info for seance id = " + seanceId);
-        String todayStr = date.format(
-                DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String tableName = "movie_park1.schedule_" + todayStr;
-        String sqlForm = "select * from %s where id = %s";
-        String sqlQuery = String.format(sqlForm, tableName, seanceId);
+        String tableName = getDestinationTableName(date);
+        String sqlQuery = String.format("select * from %s where id = ?", tableName);
 
         try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery);
-            List<PlaceInHallInfo> placeInfoList = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                Integer line = (Integer) row.get("line");
-                Integer place = (Integer) row.get("place");
-                Boolean isVip = (Boolean) row.get("isvip");
-                Integer price = (Integer) row.get("price");
-                Boolean isBlocked = (Boolean) row.get("isblocked");
-                PlaceInHallInfo info = PlaceInHallInfo.builder()
-                        .id(seanceId)
-                        .line(line)
-                        .place(place)
-                        .isVip(isVip)
-                        .price(price)
-                        .isBlocked(isBlocked)
-                        .build();
-                placeInfoList.add(info);
-            }
-            return placeInfoList;
+            return jdbcTemplate.query(sqlQuery, new Object[]{seanceId},
+                    new PlaceInHallInfoRowMapper());
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -304,7 +237,7 @@ public class DBPostgreService {
     }
 
     /**
-     * Block the place in hall for current seance.
+     * Block/unblock the place in hall for current seance.
      *
      * @param inputJson
      */
@@ -312,14 +245,15 @@ public class DBPostgreService {
     public void blockOrUnblockPlaceOnSeance(BlockPlaceInput inputJson) {
         log.info("Blocking place in seance");
         LocalDate date = getDateForSeanceId(inputJson.getSeanceId());
-        String todayStr = date.format(
-                DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String tableName = "movie_park1.schedule_" + todayStr;
-        String sqlForm = "update %s set isblocked = %s where id = %s and line = %s and place = %s";
-        String sqlQuery = String.format(sqlForm, tableName, inputJson.getIsBlocked(), inputJson.getSeanceId(),
-                inputJson.getLine(), inputJson.getPlace());
+        String tableName = getDestinationTableName(date);
+        String sqlQuery = String.format(
+                "update %s set isblocked = ? where id = ? and line = ? and place = ?",
+                tableName);
+        Object[] parameters = new Object[]{
+                inputJson.getIsBlocked(), inputJson.getSeanceId(),
+                inputJson.getLine(), inputJson.getPlace()};
         try {
-            jdbcTemplate.execute(sqlQuery);
+            jdbcTemplate.update(sqlQuery, parameters);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

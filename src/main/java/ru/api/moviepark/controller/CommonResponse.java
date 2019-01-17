@@ -1,4 +1,4 @@
-package ru.api.moviepark.entities_valueobjects;
+package ru.api.moviepark.controller;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

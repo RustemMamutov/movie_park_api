@@ -5,23 +5,39 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.api.moviepark.entities_valueobjects.CreateSeanceInput;
-import ru.api.moviepark.services.DBPostgreService;
+import ru.api.moviepark.data.valueobjects.AllSeancesView;
+import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.DBPostgreWorker;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MovieParkApplicationTests {
 
 	@Autowired
-	private DBPostgreService service;
+	private DBPostgreWorker service;
 
 	@Test
 	public void test(){
-		service.getSeanceFullInfo(81);
+//		List<PlaceInHallInfo> res = service.getSeanceFullInfo(145);
+//		List<AllSeancesView> res1 = service.getAllSeances();
+		List<AllSeancesView> res2 = service.getAllSeancesForDate(LocalDate.now().plusDays(1));
 		System.out.println();
+	}
+
+//	@Test
+	public void test1(){
+		BlockPlaceInput input = BlockPlaceInput.builder()
+				.seanceId(145)
+				.line(10)
+				.place(10)
+				.isBlocked(true)
+				.build();
+		service.blockOrUnblockPlaceOnSeance(input);
 	}
 
 //	@Test
@@ -34,7 +50,7 @@ public class MovieParkApplicationTests {
 				.hallId(1)
 				.basePrice(100)
 				.build();
-		service.addSeance(inputJson);
+		service.createAndAddNewSeance(inputJson);
 	}
 }
 

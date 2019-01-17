@@ -3,12 +3,11 @@ package ru.api.moviepark.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import ru.api.moviepark.entities_valueobjects.BlockPlaceInput;
-import ru.api.moviepark.entities_valueobjects.CommonResponse;
-import ru.api.moviepark.entities_valueobjects.CreateSeanceInput;
-import ru.api.moviepark.services.DBPostgreService;
-import ru.api.moviepark.entities_valueobjects.AllSeancesViewPojo;
-import ru.api.moviepark.entities_valueobjects.PlaceInHallInfo;
+import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.DBPostgreWorker;
+import ru.api.moviepark.data.valueobjects.AllSeancesView;
+import ru.api.moviepark.data.valueobjects.PlaceInHallInfo;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,19 +19,19 @@ import java.util.List;
 @RequestMapping("/movie-park")
 public class MovieParkController {
 
-    private DBPostgreService service;
+    private DBPostgreWorker worker;
 
-    public MovieParkController(DBPostgreService service) {
-        this.service = service;
+    public MovieParkController(DBPostgreWorker worker) {
+        this.worker = worker;
     }
 
     @GetMapping("/get-seances-for-date/{dateStr}")
     @ResponseBody
-    public List<AllSeancesViewPojo> getAllTodaySeances(@PathVariable String dateStr) {
+    public List<AllSeancesView> getAllTodaySeances(@PathVariable String dateStr) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(dateStr, formatter);
-            return service.getAllSeancesForDate(localDate);
+            return worker.getAllSeancesForDate(localDate);
         } catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -40,21 +39,21 @@ public class MovieParkController {
 
     @GetMapping("/get-all-seances")
     @ResponseBody
-    public List<AllSeancesViewPojo> getAllSeances() {
-        return service.getAllSeances();
+    public List<AllSeancesView> getAllSeances() {
+        return worker.getAllSeances();
     }
 
     @PostMapping("/add-seance")
     @ResponseBody
     public CommonResponse addSeance(@RequestBody CreateSeanceInput inputJson) {
-        return service.addSeance(inputJson);
+        return worker.createAndAddNewSeance(inputJson);
     }
 
     @PostMapping("/block-unblock-place")
     @ResponseBody
     public CommonResponse blockOrUnblockPlace(@RequestBody BlockPlaceInput inputJson) {
         try {
-            service.blockOrUnblockPlaceOnSeance(inputJson);
+            worker.blockOrUnblockPlaceOnSeance(inputJson);
             if (inputJson.getIsBlocked()) {
                 return CommonResponse.PLACE_BLOCKED;
             } else {
@@ -72,7 +71,7 @@ public class MovieParkController {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(dateStr, formatter);
-            service.fillScheduleTableForDate(localDate);
+            worker.fillScheduleTableForDate(localDate);
             return CommonResponse.TABLE_FILLED;
         } catch (Exception e){
             log.error(e.getMessage());
@@ -83,7 +82,7 @@ public class MovieParkController {
     @GetMapping("/get-seance-info/{seanceId}")
     @ResponseBody
     public List<PlaceInHallInfo> getSeanceFullInfo(@PathVariable int seanceId){
-        return service.getSeanceFullInfo(seanceId);
+        return worker.getSeanceFullInfo(seanceId);
     }
 
     @GetMapping("/test")
