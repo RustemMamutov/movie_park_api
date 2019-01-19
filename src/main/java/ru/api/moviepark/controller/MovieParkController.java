@@ -46,7 +46,7 @@ public class MovieParkController {
     @PostMapping("/add-seance")
     @ResponseBody
     public CommonResponse addSeance(@RequestBody CreateSeanceInput inputJson) {
-        return worker.createAndAddNewSeance(inputJson);
+        return worker.createNewSeance(inputJson);
     }
 
     @PostMapping("/block-unblock-place")

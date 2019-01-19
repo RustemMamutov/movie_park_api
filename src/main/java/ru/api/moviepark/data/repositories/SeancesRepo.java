@@ -7,5 +7,5 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SeancesRepo extends JpaRepository<SeancesEntity, Integer> {
-    public List<SeancesEntity> findSeancesEntityByDateAndHallId(LocalDate date, int hallId);
+    List<SeancesEntity> findSeancesEntityByDateAndHallId(LocalDate date, int hallId);
 }

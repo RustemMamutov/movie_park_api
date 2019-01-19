@@ -2,8 +2,6 @@ package ru.api.moviepark.data;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.controller.CommonResponse;
@@ -33,18 +31,17 @@ public class DBPostgreWorker {
     }
 
     public List<AllSeancesView> getAllSeances() {
-        String tableName = getDestinationTableName(Tables.SEANCES_VIEW);
+        String tableName = Tables.SEANCES_VIEW.getTableName();
         String sqlQuery = String.format("select * from %s;", tableName);
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
 
     public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
-        String tableName = getDestinationTableName(Tables.SEANCES_VIEW);
+        String tableName = Tables.SEANCES_VIEW.getTableName();
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String sqlQuery = String.format("select * from %s where date = '%s'", tableName, dateStr);
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
-
 
     private CommonResponse checkCreateSeanceInput(CreateSeanceInput inputJson) {
         LocalDate inputDate = inputJson.getDate();
@@ -52,7 +49,7 @@ public class DBPostgreWorker {
             return CommonResponse.INVALID_DATE;
         }
 
-        String tableName = getDestinationTableName(Tables.MOVIES);
+        String tableName = Tables.MOVIES.getTableName();
         String movieIdSqlQuery = String.format("select count(id) from %s where id = %s",
                 tableName, inputJson.getMovieId());
         Integer count = jdbcTemplate.queryForObject(movieIdSqlQuery, Integer.class);
@@ -60,7 +57,7 @@ public class DBPostgreWorker {
             return CommonResponse.INVALID_MOVIE;
         }
 
-        tableName = getDestinationTableName(Tables.HALLS);
+        tableName = Tables.HALLS.getTableName();
         String hallIdSqlQuery = String.format("select count(id) from %s where id = %s",
                 tableName, inputJson.getHallId());
         count = jdbcTemplate.queryForObject(hallIdSqlQuery, Integer.class);
@@ -90,13 +87,13 @@ public class DBPostgreWorker {
         return CommonResponse.VALID_DATA;
     }
 
-    public CommonResponse createAndAddNewSeance(CreateSeanceInput inputJson) {
+    public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
         if (!response.equals(CommonResponse.VALID_DATA)) {
             return response;
         }
 
-        String tableName = getDestinationTableName(Tables.SEANCES_TABLE);
+        String tableName = Tables.SEANCES_TABLE.getTableName();
         String maxIdSqlQuery = String.format("select max(id) from %s;", tableName);
         Integer maxId = jdbcTemplate.queryForObject(maxIdSqlQuery, Integer.class);
         if (maxId == null) {
@@ -117,23 +114,6 @@ public class DBPostgreWorker {
         return CommonResponse.SEANCE_ADDED;
     }
 
-    private String getDestinationTableName(Tables table) {
-        switch (table) {
-            case HALLS:
-                return "movie_park1.halls";
-            case MOVIES:
-                return "movie_park1.movies";
-            case PRICES_DELTA:
-                return "movie_park1.prices_delta";
-            case SEANCES_TABLE:
-                return "movie_park1.seances";
-            case SEANCES_VIEW:
-                return "movie_park1.all_seances_schedule";
-            default:
-                return "";
-        }
-    }
-
     private String getDestinationTableName(LocalDate date) {
         return "movie_park1.schedule_" + date.format(DateTimeFormatter.ofPattern("yyyyMM"));
     }
@@ -145,7 +125,7 @@ public class DBPostgreWorker {
     /**
      * Fill existing seance table.
      */
-    private String getFillScheduleTableForDaySqlQuery(LocalDate date, String tableName) {
+    private String getFillScheduleTableForDaySql(LocalDate date, String tableName) {
         String todayStrISO = date.format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
@@ -185,16 +165,12 @@ public class DBPostgreWorker {
     public void fillScheduleTableForDate(LocalDate date) {
         log.info("Creating tables for today");
 
-        MapSqlParameterSource argMap = new MapSqlParameterSource()
-                .addValue("tempTable", getTempTableName())
-                .addValue("destinationTable", getDestinationTableName(date));
-
         String tempTableName = getTempTableName();
         String destinationTableName = getDestinationTableName(date);
 
         String createTempTableSql = String.format("select * into temp %s from %s limit 0;",
                 tempTableName, destinationTableName);
-        String fillTempTable = getFillScheduleTableForDaySqlQuery(date, tempTableName);
+        String fillTempTable = getFillScheduleTableForDaySql(date, tempTableName);
         String insertOnConflictSql = getInsertOnConflictSql(destinationTableName, tempTableName);
         String dropTempTableSql = String.format("drop table %s;", tempTableName);
 

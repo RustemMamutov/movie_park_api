@@ -17,7 +17,7 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Builder
-@Table(name = "seances", schema = "movie_park1")
+@Table(name = "seances", schema = "movie_park")
 public class SeancesEntity {
     @Id
     Integer id;

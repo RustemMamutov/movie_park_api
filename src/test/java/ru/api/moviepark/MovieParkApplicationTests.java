@@ -50,7 +50,7 @@ public class MovieParkApplicationTests {
 				.hallId(1)
 				.basePrice(100)
 				.build();
-		service.createAndAddNewSeance(inputJson);
+		service.createNewSeance(inputJson);
 	}
 }
 
