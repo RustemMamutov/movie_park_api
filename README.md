@@ -1,6 +1,6 @@
 ## Api для работы с кинотеатрами  
   
-сервис работает с БД trade_center, schema - movie_park1.  
+сервис работает с БД trade_center, schema - movie_park.  
   
 ### Поддерживаются сдедующие команды:  
   
