@@ -5,16 +5,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.controller.CommonResponse;
+import static ru.api.moviepark.controller.CommonResponse.*;
 import ru.api.moviepark.data.rowmappers.AllSeancesViewRowMapper;
 import ru.api.moviepark.data.rowmappers.PlaceInHallInfoRowMapper;
 import ru.api.moviepark.data.entities.SeancesEntity;
 import ru.api.moviepark.data.valueobjects.*;
+import static ru.api.moviepark.data.valueobjects.Tables.*;
 import ru.api.moviepark.data.repositories.SeancesRepo;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
 
 
 @Service
@@ -31,13 +34,13 @@ public class DBPostgreWorker {
     }
 
     public List<AllSeancesView> getAllSeances() {
-        String tableName = Tables.SEANCES_VIEW.getTableName();
+        String tableName = SEANCES_VIEW.getTableName();
         String sqlQuery = String.format("select * from %s;", tableName);
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
 
     public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
-        String tableName = Tables.SEANCES_VIEW.getTableName();
+        String tableName = SEANCES_VIEW.getTableName();
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String sqlQuery = String.format("select * from %s where date = '%s'", tableName, dateStr);
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
@@ -46,27 +49,27 @@ public class DBPostgreWorker {
     private CommonResponse checkCreateSeanceInput(CreateSeanceInput inputJson) {
         LocalDate inputDate = inputJson.getDate();
         if (inputDate.isBefore(LocalDate.now())) {
-            return CommonResponse.INVALID_DATE;
+            return INVALID_DATE;
         }
 
-        String tableName = Tables.MOVIES.getTableName();
+        String tableName = MOVIES.getTableName();
         String movieIdSqlQuery = String.format("select count(id) from %s where id = %s",
                 tableName, inputJson.getMovieId());
         Integer count = jdbcTemplate.queryForObject(movieIdSqlQuery, Integer.class);
         if (count == 0) {
-            return CommonResponse.INVALID_MOVIE;
+            return INVALID_MOVIE;
         }
 
-        tableName = Tables.HALLS.getTableName();
+        tableName = HALLS.getTableName();
         String hallIdSqlQuery = String.format("select count(id) from %s where id = %s",
                 tableName, inputJson.getHallId());
         count = jdbcTemplate.queryForObject(hallIdSqlQuery, Integer.class);
         if (count == 0) {
-            return CommonResponse.INVALID_HALL;
+            return INVALID_HALL;
         }
 
         if (inputJson.getBasePrice() <= 0) {
-            return CommonResponse.INVALID_PRICE;
+            return INVALID_PRICE;
         }
 
         int inputHallId = inputJson.getHallId();
@@ -80,20 +83,20 @@ public class DBPostgreWorker {
             boolean startChecker = localStartTime.isBefore(inputStartTime) && inputStartTime.isBefore(localEndTime);
             boolean endChecker = localStartTime.isBefore(inputEndTime) && inputEndTime.isBefore(localEndTime);
             if (startChecker || endChecker) {
-                return CommonResponse.INVALID_TIME_PERIOD;
+                return INVALID_TIME_PERIOD;
             }
         }
 
-        return CommonResponse.VALID_DATA;
+        return VALID_DATA;
     }
 
     public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
-        if (!response.equals(CommonResponse.VALID_DATA)) {
+        if (!response.equals(VALID_DATA)) {
             return response;
         }
 
-        String tableName = Tables.SEANCES_TABLE.getTableName();
+        String tableName = SEANCES_TABLE.getTableName();
         String maxIdSqlQuery = String.format("select max(id) from %s;", tableName);
         Integer maxId = jdbcTemplate.queryForObject(maxIdSqlQuery, Integer.class);
         if (maxId == null) {
@@ -111,7 +114,7 @@ public class DBPostgreWorker {
                 .basePrice(inputJson.getBasePrice())
                 .build();
         seancesRepo.save(newSeanceEntity);
-        return CommonResponse.SEANCE_ADDED;
+        return SEANCE_ADDED;
     }
 
     private String getDestinationTableName(LocalDate date) {

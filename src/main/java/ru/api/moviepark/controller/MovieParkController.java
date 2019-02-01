@@ -8,6 +8,7 @@ import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.data.DBPostgreWorker;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.PlaceInHallInfo;
+import static ru.api.moviepark.controller.CommonResponse.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -55,13 +56,13 @@ public class MovieParkController {
         try {
             worker.blockOrUnblockPlaceOnSeance(inputJson);
             if (inputJson.getIsBlocked()) {
-                return CommonResponse.PLACE_BLOCKED;
+                return PLACE_BLOCKED;
             } else {
-                return CommonResponse.PLACE_UNBLOCKED;
+                return PLACE_UNBLOCKED;
             }
         } catch (Exception e){
             log.error(e.getMessage());
-            return CommonResponse.ERROR;
+            return ERROR;
         }
     }
 
@@ -72,7 +73,7 @@ public class MovieParkController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(dateStr, formatter);
             worker.fillScheduleTableForDate(localDate);
-            return CommonResponse.TABLE_FILLED;
+            return TABLE_FILLED;
         } catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
