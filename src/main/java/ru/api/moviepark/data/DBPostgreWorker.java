@@ -8,10 +8,10 @@ import ru.api.moviepark.controller.CommonResponse;
 import static ru.api.moviepark.controller.CommonResponse.*;
 import ru.api.moviepark.data.rowmappers.AllSeancesViewRowMapper;
 import ru.api.moviepark.data.rowmappers.PlaceInHallInfoRowMapper;
-import ru.api.moviepark.data.entities.SeancesEntity;
+import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.valueobjects.*;
 import static ru.api.moviepark.data.valueobjects.Tables.*;
-import ru.api.moviepark.data.repositories.SeancesRepo;
+import ru.api.moviepark.data.repositories.MainScheduleRepo;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,23 +22,25 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class DBPostgreWorker {
+public class DBPostgreWorker implements DatabaseWorker{
 
     private final JdbcTemplate jdbcTemplate;
-    private final SeancesRepo seancesRepo;
+    private final MainScheduleRepo mainScheduleRepo;
 
     public DBPostgreWorker(JdbcTemplate jdbcTemplate,
-                           SeancesRepo seancesRepo) {
+                           MainScheduleRepo mainScheduleRepo) {
         this.jdbcTemplate = jdbcTemplate;
-        this.seancesRepo = seancesRepo;
+        this.mainScheduleRepo = mainScheduleRepo;
     }
 
+    @Override
     public List<AllSeancesView> getAllSeances() {
         String tableName = SEANCES_VIEW.getTableName();
         String sqlQuery = String.format("select * from %s;", tableName);
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
 
+    @Override
     public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
         String tableName = SEANCES_VIEW.getTableName();
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -76,8 +78,8 @@ public class DBPostgreWorker {
         LocalTime inputStartTime = inputJson.getStartTime();
         LocalTime inputEndTime = inputJson.getEndTime();
 
-        List<SeancesEntity> allSeancesForDate = seancesRepo.findSeancesEntityByDateAndHallId(inputDate, inputHallId);
-        for (SeancesEntity entity : allSeancesForDate) {
+        List<MainScheduleEntity> allSeancesForDate = mainScheduleRepo.findSeancesEntityBySeanceDateAndHallId(inputDate, inputHallId);
+        for (MainScheduleEntity entity : allSeancesForDate) {
             LocalTime localStartTime = entity.getStartTime();
             LocalTime localEndTime = entity.getEndTime();
             boolean startChecker = localStartTime.isBefore(inputStartTime) && inputStartTime.isBefore(localEndTime);
@@ -90,6 +92,7 @@ public class DBPostgreWorker {
         return VALID_DATA;
     }
 
+    @Override
     public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
         if (!response.equals(VALID_DATA)) {
@@ -103,17 +106,17 @@ public class DBPostgreWorker {
             maxId = 1;
         }
         int newSeanceId = maxId + 1;
-        SeancesEntity newSeanceEntity = SeancesEntity
+        MainScheduleEntity newSeanceEntity = MainScheduleEntity
                 .builder()
-                .id(newSeanceId)
-                .date(inputJson.getDate())
+                .seanceId(newSeanceId)
+                .seanceDate(inputJson.getDate())
                 .startTime(inputJson.getStartTime())
                 .endTime(inputJson.getEndTime())
                 .movieId(inputJson.getMovieId())
                 .hallId(inputJson.getHallId())
                 .basePrice(inputJson.getBasePrice())
                 .build();
-        seancesRepo.save(newSeanceEntity);
+        mainScheduleRepo.save(newSeanceEntity);
         return SEANCE_ADDED;
     }
 
@@ -164,6 +167,7 @@ public class DBPostgreWorker {
     /**
      * Filling table data for today.
      */
+    @Override
     @Transactional
     public void fillScheduleTableForDate(LocalDate date) {
         log.info("Creating tables for today");
@@ -200,6 +204,7 @@ public class DBPostgreWorker {
      * @param seanceId
      * @return
      */
+    @Override
     public List<PlaceInHallInfo> getSeanceFullInfo(int seanceId) {
         LocalDate date = getDateForSeanceId(seanceId);
         log.info("Getting full info for seance id = " + seanceId);
@@ -220,6 +225,7 @@ public class DBPostgreWorker {
      *
      * @param inputJson
      */
+    @Override
     @Transactional
     public void blockOrUnblockPlaceOnSeance(BlockPlaceInput inputJson) {
         log.info("Blocking place in seance");

@@ -17,11 +17,15 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Builder
-@Table(name = "seances", schema = "movie_park")
-public class SeancesEntity {
+@Table(name = "main_schedule", schema = "movie_park")
+public class MainScheduleEntity {
     @Id
-    Integer id;
-    LocalDate date;
+    @Column(name = "seance_id")
+    Integer seanceId;
+
+    @Column(name = "seance_date")
+    LocalDate seanceDate;
+
     @Column(name = "start_time")
     LocalTime startTime;
 

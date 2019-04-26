@@ -3,6 +3,7 @@ package ru.api.moviepark.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import ru.api.moviepark.data.DatabaseWorker;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.data.DBPostgreWorker;
@@ -20,7 +21,7 @@ import java.util.List;
 @RequestMapping("/movie-park")
 public class MovieParkController {
 
-    private DBPostgreWorker worker;
+    private DatabaseWorker worker;
 
     public MovieParkController(DBPostgreWorker worker) {
         this.worker = worker;
