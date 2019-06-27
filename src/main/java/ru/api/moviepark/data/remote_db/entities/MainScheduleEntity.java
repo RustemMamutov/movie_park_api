@@ -1,9 +1,11 @@
-package ru.api.moviepark.data.entities;
+package ru.api.moviepark.data.remote_db.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ru.api.moviepark.config.CONSTANTS;
+import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +19,7 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Builder
-@Table(name = "main_schedule", schema = "movie_park")
+@Table(name = CONSTANTS.MAIN_SCHEDULE_TABLE_NAME, schema = CONSTANTS.SCHEMA_NAME)
 public class MainScheduleEntity {
     @Id
     @Column(name = "seance_id")
@@ -40,4 +42,17 @@ public class MainScheduleEntity {
 
     @Column(name = "base_price")
     Integer basePrice;
+
+    public static MainScheduleEntity createMainScheduleEntity(Integer seanceId, CreateSeanceInput inputJson) {
+        return MainScheduleEntity
+                .builder()
+                .seanceId(seanceId)
+                .seanceDate(inputJson.getDate())
+                .startTime(inputJson.getStartTime())
+                .endTime(inputJson.getEndTime())
+                .movieId(inputJson.getMovieId())
+                .hallId(inputJson.getHallId())
+                .basePrice(inputJson.getBasePrice())
+                .build();
+    }
 }

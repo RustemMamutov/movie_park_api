@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class MovieParkApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(MovieParkApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MovieParkApplication.class, args);
+    }
 }

@@ -9,7 +9,7 @@ import ru.api.moviepark.data.valueobjects.PlaceInHallInfo;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface DatabaseWorker {
+public interface DatabaseClient {
     List<AllSeancesView> getAllSeances();
 
     List<AllSeancesView> getAllSeancesForDate(LocalDate date);

@@ -1,96 +1,58 @@
-package ru.api.moviepark.data;
+package ru.api.moviepark.data.remote_db;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.controller.CommonResponse;
-import static ru.api.moviepark.controller.CommonResponse.*;
-import ru.api.moviepark.data.rowmappers.AllSeancesViewRowMapper;
-import ru.api.moviepark.data.rowmappers.PlaceInHallInfoRowMapper;
-import ru.api.moviepark.data.entities.MainScheduleEntity;
-import ru.api.moviepark.data.valueobjects.*;
-import static ru.api.moviepark.data.valueobjects.Tables.*;
-import ru.api.moviepark.data.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.DatabaseClient;
+import ru.api.moviepark.data.remote_db.entities.MainScheduleEntity;
+import ru.api.moviepark.data.remote_db.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.remote_db.repositories.SeancesPlacesRepo;
+import ru.api.moviepark.data.valueobjects.AllSeancesView;
+import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.valueobjects.PlaceInHallInfo;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-
+import static ru.api.moviepark.controller.CommonResponse.SEANCE_ADDED;
+import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
+import static ru.api.moviepark.util.CheckInputUtil.checkCreateSeanceInput;
 
 @Service
 @Slf4j
-public class DBPostgreWorker implements DatabaseWorker{
+public class RemoteDatabaseClient implements DatabaseClient {
 
     private final JdbcTemplate jdbcTemplate;
     private final MainScheduleRepo mainScheduleRepo;
+    private final SeancesPlacesRepo seancesPlacesRepo;
 
-    public DBPostgreWorker(JdbcTemplate jdbcTemplate,
-                           MainScheduleRepo mainScheduleRepo) {
+    public RemoteDatabaseClient(JdbcTemplate jdbcTemplate, MainScheduleRepo mainScheduleRepo, SeancesPlacesRepo seancesPlacesRepo) {
         this.jdbcTemplate = jdbcTemplate;
         this.mainScheduleRepo = mainScheduleRepo;
+        this.seancesPlacesRepo = seancesPlacesRepo;
     }
 
     @Override
     public List<AllSeancesView> getAllSeances() {
-        String tableName = SEANCES_VIEW.getTableName();
-        String sqlQuery = String.format("select * from %s;", tableName);
-        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+//        String tableName = SEANCES_VIEW.getTableName();
+//        String sqlQuery = String.format("select * from %s;", tableName);
+//        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+        return null;
     }
 
     @Override
     public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
-        String tableName = SEANCES_VIEW.getTableName();
-        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String sqlQuery = String.format("select * from %s where date = '%s'", tableName, dateStr);
-        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+//        String tableName = SEANCES_VIEW.getTableName();
+//        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//        String sqlQuery = String.format("select * from %s where date = '%s'", tableName, dateStr);
+//        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+        return null;
     }
 
-    private CommonResponse checkCreateSeanceInput(CreateSeanceInput inputJson) {
-        LocalDate inputDate = inputJson.getDate();
-        if (inputDate.isBefore(LocalDate.now())) {
-            return INVALID_DATE;
-        }
-
-        String tableName = MOVIES.getTableName();
-        String movieIdSqlQuery = String.format("select count(id) from %s where id = %s",
-                tableName, inputJson.getMovieId());
-        Integer count = jdbcTemplate.queryForObject(movieIdSqlQuery, Integer.class);
-        if (count == 0) {
-            return INVALID_MOVIE;
-        }
-
-        tableName = HALLS.getTableName();
-        String hallIdSqlQuery = String.format("select count(id) from %s where id = %s",
-                tableName, inputJson.getHallId());
-        count = jdbcTemplate.queryForObject(hallIdSqlQuery, Integer.class);
-        if (count == 0) {
-            return INVALID_HALL;
-        }
-
-        if (inputJson.getBasePrice() <= 0) {
-            return INVALID_PRICE;
-        }
-
-        int inputHallId = inputJson.getHallId();
-        LocalTime inputStartTime = inputJson.getStartTime();
-        LocalTime inputEndTime = inputJson.getEndTime();
-
-        List<MainScheduleEntity> allSeancesForDate = mainScheduleRepo.findSeancesEntityBySeanceDateAndHallId(inputDate, inputHallId);
-        for (MainScheduleEntity entity : allSeancesForDate) {
-            LocalTime localStartTime = entity.getStartTime();
-            LocalTime localEndTime = entity.getEndTime();
-            boolean startChecker = localStartTime.isBefore(inputStartTime) && inputStartTime.isBefore(localEndTime);
-            boolean endChecker = localStartTime.isBefore(inputEndTime) && inputEndTime.isBefore(localEndTime);
-            if (startChecker || endChecker) {
-                return INVALID_TIME_PERIOD;
-            }
-        }
-
-        return VALID_DATA;
-    }
 
     @Override
     public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
@@ -99,23 +61,8 @@ public class DBPostgreWorker implements DatabaseWorker{
             return response;
         }
 
-        String tableName = SEANCES_TABLE.getTableName();
-        String maxIdSqlQuery = String.format("select max(id) from %s;", tableName);
-        Integer maxId = jdbcTemplate.queryForObject(maxIdSqlQuery, Integer.class);
-        if (maxId == null) {
-            maxId = 1;
-        }
-        int newSeanceId = maxId + 1;
-        MainScheduleEntity newSeanceEntity = MainScheduleEntity
-                .builder()
-                .seanceId(newSeanceId)
-                .seanceDate(inputJson.getDate())
-                .startTime(inputJson.getStartTime())
-                .endTime(inputJson.getEndTime())
-                .movieId(inputJson.getMovieId())
-                .hallId(inputJson.getHallId())
-                .basePrice(inputJson.getBasePrice())
-                .build();
+        int newSeanceId = mainScheduleRepo.findMaxId().orElse(0) + 1;
+        MainScheduleEntity newSeanceEntity = MainScheduleEntity.createMainScheduleEntity(newSeanceId, inputJson);
         mainScheduleRepo.save(newSeanceEntity);
         return SEANCE_ADDED;
     }
@@ -212,8 +159,8 @@ public class DBPostgreWorker implements DatabaseWorker{
         String sqlQuery = String.format("select * from %s where id = ?", tableName);
 
         try {
-            return jdbcTemplate.query(sqlQuery, new Object[]{seanceId},
-                    new PlaceInHallInfoRowMapper());
+//            return seancesPlacesRepo.findBySeanceId(seanceId);
+            return null;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

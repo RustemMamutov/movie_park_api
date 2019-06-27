@@ -3,17 +3,18 @@ package ru.api.moviepark.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import ru.api.moviepark.data.DatabaseWorker;
+import ru.api.moviepark.data.DatabaseClient;
+import ru.api.moviepark.data.remote_db.RemoteDatabaseClient;
+import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
-import ru.api.moviepark.data.DBPostgreWorker;
-import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.PlaceInHallInfo;
-import static ru.api.moviepark.controller.CommonResponse.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static ru.api.moviepark.controller.CommonResponse.*;
 
 
 @Controller
@@ -21,9 +22,9 @@ import java.util.List;
 @RequestMapping("/movie-park")
 public class MovieParkController {
 
-    private DatabaseWorker worker;
+    private DatabaseClient worker;
 
-    public MovieParkController(DBPostgreWorker worker) {
+    public MovieParkController(RemoteDatabaseClient worker) {
         this.worker = worker;
     }
 
@@ -34,7 +35,7 @@ public class MovieParkController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(dateStr, formatter);
             return worker.getAllSeancesForDate(localDate);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -61,7 +62,7 @@ public class MovieParkController {
             } else {
                 return PLACE_UNBLOCKED;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             return ERROR;
         }
@@ -69,13 +70,13 @@ public class MovieParkController {
 
     @PostMapping("/create-schedule-for-date/{dateStr}")
     @ResponseBody
-    public CommonResponse createScheduleTableForDate(@PathVariable String dateStr){
+    public CommonResponse createScheduleTableForDate(@PathVariable String dateStr) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(dateStr, formatter);
             worker.fillScheduleTableForDate(localDate);
             return TABLE_FILLED;
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
@@ -83,7 +84,7 @@ public class MovieParkController {
 
     @GetMapping("/get-seance-info/{seanceId}")
     @ResponseBody
-    public List<PlaceInHallInfo> getSeanceFullInfo(@PathVariable int seanceId){
+    public List<PlaceInHallInfo> getSeanceFullInfo(@PathVariable int seanceId) {
         return worker.getSeanceFullInfo(seanceId);
     }
 
