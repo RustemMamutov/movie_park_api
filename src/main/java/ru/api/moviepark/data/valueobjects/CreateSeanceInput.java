@@ -14,10 +14,10 @@ import java.time.LocalTime;
 @Getter
 @Builder
 public class CreateSeanceInput {
-    LocalDate date;
-    LocalTime startTime;
-    LocalTime endTime;
-    Integer movieId;
-    Integer hallId;
-    Integer basePrice;
+    private LocalDate date;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Integer movieId;
+    private Integer hallId;
+    private Integer basePrice;
 }

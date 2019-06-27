@@ -16,8 +16,11 @@ import java.sql.Time;
 @Builder
 public class AllSeancesView {
 
-    Integer id;
-    Date date;
+    @Column(name = "seance_id")
+    Integer seanceId;
+
+    @Column(name = "seance_date")
+    Date seanceDate;
 
     @Column(name = "start_time")
     Time startTime;
@@ -25,7 +28,8 @@ public class AllSeancesView {
     @Column(name = "end_time")
     Time endTime;
 
-    String name;
+    @Column(name = "movie_name")
+    String movieName;
 
     @Column(name = "hall_id")
     Integer hallId;

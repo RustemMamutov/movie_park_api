@@ -1,9 +1,6 @@
 package ru.api.moviepark.data.remote_db.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.api.moviepark.config.CONSTANTS;
 
 import javax.persistence.*;
@@ -11,6 +8,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Builder
 @IdClass(SeancePlacesId.class)
 @Entity
@@ -25,11 +23,12 @@ public class SeancePlacesEntity {
     private Integer hallRow;
 
     @Id
-    @Column(name = "place")
     private Integer place;
 
-    @Column(name = "is_blocked")
+    @Column(name = "is_vip")
+    private Boolean isVip;
+
+    private Integer price;
+
     private Boolean blocked;
-
-
 }

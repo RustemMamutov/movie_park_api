@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BlockPlaceInput {
     private Integer seanceId;
-    private Integer line;
+    private Integer row;
     private Integer place;
-    private Boolean isBlocked;
+    private Boolean blocked;
 }
