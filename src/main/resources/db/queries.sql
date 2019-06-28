@@ -1,15 +1,17 @@
-CREATE or replace function
-    create_new_seances(days int) RETURNS void
+CREATE OR REPLACE FUNCTION cinema_park.create_new_seances(days integer)
+    RETURNS void
+    LANGUAGE sql
 AS
-$$
+$function$
 INSERT into cinema_park.seances_places
     (
         select main_schedule.seance_id,
+               main_schedule.hall_id,
                halls.row,
                halls.place,
                halls.is_vip,
                main_schedule.base_price + prices_delta.price_delta as price,
-               false                                               as blocked
+               false                                               as is_blocked
         from cinema_park.main_schedule
                  inner join cinema_park.halls
                             on main_schedule.hall_id = halls.hall_id
@@ -23,5 +25,5 @@ INSERT into cinema_park.seances_places
     )
 ON conflict (seance_id, hall_row, place)
     DO nothing
-$$
-    LANGUAGE SQL;
+$function$
+;

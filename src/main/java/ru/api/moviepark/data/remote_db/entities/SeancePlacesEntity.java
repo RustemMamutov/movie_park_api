@@ -18,6 +18,9 @@ public class SeancePlacesEntity {
     @Column(name = "seance_id")
     private Integer seanceId;
 
+    @Column(name = "hall_id")
+    private Integer hallId;
+
     @Id
     @Column(name = "hall_row")
     private Integer hallRow;

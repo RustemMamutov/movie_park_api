@@ -1,8 +1,12 @@
 package ru.api.moviepark.data.remote_db.entities;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 
-
+@NoArgsConstructor
+@AllArgsConstructor
 public class HallsEntityId implements Serializable {
     private Integer hallId;
 
