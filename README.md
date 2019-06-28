@@ -38,8 +38,8 @@ dateStr - дата в формате YYYY-MM-DD (2019-01-31)
 Метод блокирует/освобождает соответствующее место в зале для заданного сеанса.  
   
   
-**POST /movie-park/create-schedule-for-date/{dateStr}**  
-dateStr - дата в формате YYYY-MM-DD (2019-01-31)  
+**POST /movie-park/update-seances-schedule/{days}**  
+days - на такое кол-во дней вперед обновится расписание.  
   
 Метод создает таблицу с расписанием всех сеансов для заданной даты (dateStr).  
   
