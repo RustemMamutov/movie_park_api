@@ -1,17 +1,16 @@
-package ru.api.moviepark.data.remote_db;
+package ru.api.moviepark.data.remote;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.config.CONSTANTS;
 import ru.api.moviepark.controller.CommonResponse;
-import ru.api.moviepark.data.remote_db.entities.MainScheduleEntity;
-import ru.api.moviepark.data.remote_db.entities.SeancePlacesEntity;
-import ru.api.moviepark.data.remote_db.mappers.AllSeancesViewRowMapper;
-import ru.api.moviepark.data.remote_db.repositories.MainScheduleRepo;
-import ru.api.moviepark.data.remote_db.repositories.SeancesPlacesRepo;
+import ru.api.moviepark.data.remote.entities.MainScheduleEntity;
+import ru.api.moviepark.data.remote.entities.SeancePlacesEntity;
+import ru.api.moviepark.data.remote.mappers.AllSeancesViewRowMapper;
+import ru.api.moviepark.data.remote.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.remote.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
@@ -32,7 +31,6 @@ public class RemoteDatabaseClient {
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
 
-    @Autowired
     public RemoteDatabaseClient(JdbcTemplate jdbcTemplate,
                                 MainScheduleRepo mainScheduleRepo,
                                 SeancesPlacesRepo seancesPlacesRepo) {
@@ -66,7 +64,7 @@ public class RemoteDatabaseClient {
     }
 
     /**
-     * Filling table data for today.
+     * Update seances for next days.
      */
     @Transactional
     public void updateScheduleTable(int days) {

@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.remote_db;
+package ru.api.moviepark.data.remote;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

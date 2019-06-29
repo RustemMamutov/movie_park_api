@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.remote_db.mappers;
+package ru.api.moviepark.data.remote.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;

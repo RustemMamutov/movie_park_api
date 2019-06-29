@@ -1,8 +1,8 @@
-package ru.api.moviepark.data.remote_db.repositories;
+package ru.api.moviepark.data.remote.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.api.moviepark.data.remote_db.entities.MainScheduleEntity;
+import ru.api.moviepark.data.remote.entities.MainScheduleEntity;
 
 import java.time.LocalDate;
 import java.util.List;

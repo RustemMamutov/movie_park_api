@@ -3,8 +3,8 @@ package ru.api.moviepark.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import ru.api.moviepark.data.remote_db.RemoteDatabaseClient;
-import ru.api.moviepark.data.remote_db.entities.SeancePlacesEntity;
+import ru.api.moviepark.data.remote.RemoteDatabaseClient;
+import ru.api.moviepark.data.remote.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
@@ -18,12 +18,12 @@ import static ru.api.moviepark.controller.CommonResponse.*;
 
 @Controller
 @Slf4j
-@RequestMapping("/movie-park")
-public class MovieParkController {
+@RequestMapping("/remote")
+public class RemoteController {
 
     private RemoteDatabaseClient databaseClient;
 
-    public MovieParkController(RemoteDatabaseClient databaseClient) {
+    public RemoteController(RemoteDatabaseClient databaseClient) {
         this.databaseClient = databaseClient;
     }
 
