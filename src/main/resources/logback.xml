@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-<!--        <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>-->
+<!--    <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>-->
     <property name="LOG_DIR" value="/root/movie_rest_api/"/>
 
     <appender name="movieParkLog" class="ch.qos.logback.core.rolling.RollingFileAppender">

@@ -20,20 +20,20 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "remoteEntityManagerFactory",
-        transactionManagerRef = "remoteTransactionManager",
-        basePackages = {"ru.api.moviepark.data.remote"}
+        entityManagerFactoryRef = "psqlEntityManagerFactory",
+        transactionManagerRef = "psqlTransactionManager",
+        basePackages = {"ru.api.moviepark.data"}
 )
-public class RemoteDatabaseConfig {
+public class DatabaseConfig {
 
     private Environment env;
 
-    public RemoteDatabaseConfig(Environment env) {
+    public DatabaseConfig(Environment env) {
         this.env = env;
     }
 
     @Primary
-    @Bean(name = "remoteDatasource")
+    @Bean(name = "psqlDatasource")
     public DataSource customerDataSource() {
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -46,19 +46,19 @@ public class RemoteDatabaseConfig {
     }
 
     @Primary
-    @Bean(name = "remoteEntityManagerFactory")
+    @Bean(name = "psqlEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
-    entityManagerFactory(EntityManagerFactoryBuilder builder, @Qualifier("remoteDatasource") DataSource dataSource) {
+    entityManagerFactory(EntityManagerFactoryBuilder builder, @Qualifier("psqlDatasource") DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
-                .packages("ru.api.moviepark.data.remote")
+                .packages("ru.api.moviepark.data")
                 .build();
     }
 
     @Primary
-    @Bean(name = "remoteTransactionManager")
+    @Bean(name = "psqlTransactionManager")
     public PlatformTransactionManager customerTransactionManager(
-            @Qualifier("remoteEntityManagerFactory") EntityManagerFactory customerEntityManagerFactory) {
+            @Qualifier("psqlEntityManagerFactory") EntityManagerFactory customerEntityManagerFactory) {
         return new JpaTransactionManager(customerEntityManagerFactory);
     }
 }

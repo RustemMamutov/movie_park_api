@@ -1,10 +1,10 @@
-package ru.api.moviepark.data.remote.repositories;
+package ru.api.moviepark.data.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.api.moviepark.data.remote.entities.HallsEntity;
-import ru.api.moviepark.data.remote.entities.HallsEntityId;
+import ru.api.moviepark.data.entities.HallsEntity;
+import ru.api.moviepark.data.entities.HallsEntityId;
 
 import java.util.Optional;
 

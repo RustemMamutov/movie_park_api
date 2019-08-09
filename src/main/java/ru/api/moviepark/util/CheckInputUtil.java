@@ -1,10 +1,10 @@
 package ru.api.moviepark.util;
 
 import ru.api.moviepark.controller.CommonResponse;
-import ru.api.moviepark.data.remote.entities.MainScheduleEntity;
-import ru.api.moviepark.data.remote.repositories.HallsRepo;
-import ru.api.moviepark.data.remote.repositories.MainScheduleRepo;
-import ru.api.moviepark.data.remote.repositories.MoviesRepo;
+import ru.api.moviepark.data.entities.MainScheduleEntity;
+import ru.api.moviepark.data.repositories.HallsRepo;
+import ru.api.moviepark.data.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.repositories.MoviesRepo;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;

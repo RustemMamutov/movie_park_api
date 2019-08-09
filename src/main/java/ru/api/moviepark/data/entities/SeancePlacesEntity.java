@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.remote.entities;
+package ru.api.moviepark.data.entities;
 
 import lombok.*;
 import ru.api.moviepark.config.CONSTANTS;
