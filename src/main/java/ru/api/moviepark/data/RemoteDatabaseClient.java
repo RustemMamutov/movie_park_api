@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.remote;
+package ru.api.moviepark.data;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.config.CONSTANTS;
 import ru.api.moviepark.controller.CommonResponse;
-import ru.api.moviepark.data.remote.entities.MainScheduleEntity;
-import ru.api.moviepark.data.remote.entities.SeancePlacesEntity;
-import ru.api.moviepark.data.remote.mappers.AllSeancesViewRowMapper;
-import ru.api.moviepark.data.remote.repositories.MainScheduleRepo;
-import ru.api.moviepark.data.remote.repositories.SeancesPlacesRepo;
+import ru.api.moviepark.data.entities.MainScheduleEntity;
+import ru.api.moviepark.data.entities.SeancePlacesEntity;
+import ru.api.moviepark.data.mappers.AllSeancesViewRowMapper;
+import ru.api.moviepark.data.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;

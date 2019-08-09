@@ -1,9 +1,9 @@
-package ru.api.moviepark.data.remote.repositories;
+package ru.api.moviepark.data.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.api.moviepark.data.remote.entities.MoviesEntity;
+import ru.api.moviepark.data.entities.MoviesEntity;
 
 import java.util.Optional;
 
