@@ -2,32 +2,16 @@
 
     <property name="pattern" value="%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
-    <appender name="ConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${pattern}</pattern>
         </encoder>
     </appender>
 
-        <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>
-<!--    <property name="LOG_DIR" value="/root/movie_rest_api/"/>-->
+<!--        <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>-->
+    <property name="LOG_DIR" value="/root/movie_rest_api/"/>
 
-    <appender name="ConsoleLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${pattern}</pattern>
-        </encoder>
-
-        <file>${LOG_DIR}/console.log</file>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_DIR}/archive/%d{yyyy-MM-dd}.%i.log.gz</FileNamePattern>
-            <totalSizeCap>100Mb</totalSizeCap>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>10Mb</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-    </appender>
-
-    <appender name="MovieLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="movieParkLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${pattern}</pattern>
         </encoder>
@@ -44,11 +28,11 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="ConsoleLogFile"/>
+        <appender-ref ref="console"/>
     </root>
 
     <logger name="ru.api.moviepark" level="DEBUG" additivity="false">
-        <appender-ref ref="MovieLogFile"/>
+        <appender-ref ref="movieParkLog"/>
     </logger>
 
 </configuration>

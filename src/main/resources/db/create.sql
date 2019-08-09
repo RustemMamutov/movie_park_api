@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS cinema_park;
 
-CREATE TABLE cinema_park.halls
+CREATE TABLE IF NOT EXISTS movie_park.halls
 (
  hall_id int4 NOT NULL,
  row int4 NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE cinema_park.halls
  PRIMARY KEY (hall_id, row, place)
 );
 
-CREATE TABLE cinema_park.main_schedule
+CREATE TABLE IF NOT EXISTS movie_park.main_schedule
 (
  seance_id int4 NOT NULL,
  seance_date date NOT NULL,
@@ -21,14 +21,14 @@ CREATE TABLE cinema_park.main_schedule
  PRIMARY KEY (seance_id)
 );
 
-CREATE TABLE cinema_park.movies
+CREATE TABLE IF NOT EXISTS movie_park.movies
 (
  movie_id int4 NOT NULL,
  movie_name text NOT NULL,
  CONSTRAINT movies_pkey PRIMARY KEY (movie_id)
 );
 
-CREATE TABLE cinema_park.prices_delta
+CREATE TABLE IF NOT EXISTS movie_park.prices_delta
 (
  start_time time NOT NULL,
  end_time time NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE cinema_park.prices_delta
  price_delta int4 NOT NULL
 );
 
-CREATE TABLE cinema_park.seances_places
+CREATE TABLE IF NOT EXISTS movie_park.seances_places
 (
  seance_id int4 NOT NULL,
  hall_id int4 NOT NULL,
@@ -51,14 +51,13 @@ CREATE TABLE cinema_park.seances_places
 );
 
 create or replace view
- cinema_park.main_schedule_view as
+ movie_park.main_schedule_view as
 select main_schedule.seance_id,
  main_schedule.seance_date,
  main_schedule.start_time,
  main_schedule.end_time,
  movies.movie_name,
  main_schedule.hall_id
-from cinema_park.main_schedule
- inner join cinema_park.movies
+from movie_park.main_schedule
+ inner join movie_park.movies
  on main_schedule.movie_id = movies.movie_id;
-
