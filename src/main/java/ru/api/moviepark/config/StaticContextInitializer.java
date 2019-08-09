@@ -3,9 +3,9 @@ package ru.api.moviepark.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.api.moviepark.data.remote_db.repositories.HallsRepo;
-import ru.api.moviepark.data.remote_db.repositories.MainScheduleRepo;
-import ru.api.moviepark.data.remote_db.repositories.MoviesRepo;
+import ru.api.moviepark.data.remote.repositories.HallsRepo;
+import ru.api.moviepark.data.remote.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.remote.repositories.MoviesRepo;
 import ru.api.moviepark.util.CheckInputUtil;
 
 import javax.annotation.PostConstruct;

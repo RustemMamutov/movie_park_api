@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.remote_db.entities;
+package ru.api.moviepark.data.remote.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
