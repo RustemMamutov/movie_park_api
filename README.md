@@ -4,15 +4,15 @@
   
 ### Поддерживаются сдедующие команды:  
   
-**Get /movie-park/get-seances-for-date/{dateStr}** 
+**Get /movie_park/get_seances_for_date/{dateStr}** 
 dateStr - дата в формате YYYY-MM-DD (2019-01-31)  
  
 Метод возвращает список всех сеансов для заданной даты (dateStr).
   
-**Get /movie-park/get-all-seances**  
+**Get /movie_park/get_all_seances**  
 Метод возвращает список всех существующих сеансов.  
   
-**POST /movie-park/add-seance**  
+**POST /movie_park/add_seance**  
 принимает в качестве параметра JSON вида:  
 {  
 	"date": "2019-01-31",  
@@ -25,7 +25,7 @@ dateStr - дата в формате YYYY-MM-DD (2019-01-31)
   
 Метод добавляет новый сеанс в соответствующую таблицу  
 
-**POST /movie-park/block-unblock-place**  
+**POST /movie_park/block_unblock_place**  
 
 принимает в качестве параметра JSON вида:  
 {  
@@ -38,12 +38,12 @@ dateStr - дата в формате YYYY-MM-DD (2019-01-31)
 Метод блокирует/освобождает соответствующее место в зале для заданного сеанса.  
   
   
-**POST /movie-park/update-seances-schedule/{days}**  
+**POST /movie_park/update_seances_schedule/{days}**  
 days - на такое кол-во дней вперед обновится расписание.  
   
 Метод создает таблицу с расписанием всех сеансов для заданной даты (dateStr).  
   
-**Get /movie-park/get-seance-info/{seanceId}**
+**Get /movie_park/get_seance_info/{seanceId}**
 seanceId - id сеанса.
 
 Метод возвращает информацию обо всех местах в зале для заданного сеанса (seanceId).

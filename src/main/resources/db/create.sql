@@ -3,10 +3,10 @@ CREATE SCHEMA IF NOT EXISTS cinema_park;
 CREATE TABLE IF NOT EXISTS movie_park.halls
 (
  hall_id int4 NOT NULL,
- row int4 NOT NULL,
+ hall_row int4 NOT NULL,
  place int4 NOT NULL,
  is_vip boolean NOT NULL,
- PRIMARY KEY (hall_id, row, place)
+ PRIMARY KEY (hall_id, hall_row, place)
 );
 
 CREATE TABLE IF NOT EXISTS movie_park.main_schedule

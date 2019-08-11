@@ -7,7 +7,7 @@ INSERT into cinema_park.seances_places
     (
         select main_schedule.seance_id,
                main_schedule.hall_id,
-               halls.row,
+               halls.hall_row,
                halls.place,
                halls.is_vip,
                main_schedule.base_price + prices_delta.price_delta as price,

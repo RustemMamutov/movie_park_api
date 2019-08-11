@@ -27,7 +27,7 @@ public class MovieParkController {
         this.databaseClient = databaseClient;
     }
 
-    @GetMapping("/get-seances-for-date/{dateStr}")
+    @GetMapping("/get_seances_for_date/{dateStr}")
     @ResponseBody
     public List<AllSeancesView> getAllTodaySeances(@PathVariable String dateStr) {
         try {
@@ -39,19 +39,19 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get-all-seances")
+    @GetMapping("/get_all_seances")
     @ResponseBody
     public List<AllSeancesView> getAllSeances() {
         return databaseClient.getAllSeances();
     }
 
-    @PostMapping("/add-seance")
+    @PostMapping("/add_seance")
     @ResponseBody
     public CommonResponse addSeance(@RequestBody CreateSeanceInput inputJson) {
         return databaseClient.createNewSeance(inputJson);
     }
 
-    @PostMapping("/block-unblock-place")
+    @PostMapping("/block_unblock_place")
     @ResponseBody
     public CommonResponse blockOrUnblockPlace(@RequestBody BlockPlaceInput inputJson) {
         try {
@@ -67,7 +67,7 @@ public class MovieParkController {
         }
     }
 
-    @PostMapping("/update-seances-schedule/{days}")
+    @PostMapping("/update_seances_schedule/{days}")
     @ResponseBody
     public CommonResponse updateScheduleTable(@PathVariable int days) {
         try {
@@ -79,7 +79,7 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get-seance-info/{seanceId}")
+    @GetMapping("/get_seance_info/{seanceId}")
     @ResponseBody
     public List<SeancePlacesEntity> getSeanceFullInfo(@PathVariable int seanceId) {
         return databaseClient.getSeanceFullInfo(seanceId);
