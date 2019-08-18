@@ -1,6 +1,10 @@
 package ru.api.moviepark.config;
 
+import java.time.format.DateTimeFormatter;
+
 public class CONSTANTS {
+
+    public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static final String SCHEMA_NAME = "movie_park";
 
@@ -18,4 +22,6 @@ public class CONSTANTS {
 
     public static final String MAIN_SCHEDULE_VIEW_FULL =
             String.format("%s.%s", SCHEMA_NAME, MAIN_SCHEDULE_VIEW_NAME);
+
+    public static final long MAX_CACHE_LIFE_TIME = 30000;
 }

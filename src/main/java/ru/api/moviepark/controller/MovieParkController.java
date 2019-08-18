@@ -10,11 +10,15 @@ import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static ru.api.moviepark.controller.CommonResponse.*;
+import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
+import static ru.api.moviepark.controller.CommonResponse.TABLE_FILLED;
+import static ru.api.moviepark.controller.CommonResponse.PLACE_BLOCKED;
+import static ru.api.moviepark.controller.CommonResponse.PLACE_UNBLOCKED;
+import static ru.api.moviepark.controller.CommonResponse.ERROR;
 
+import static ru.api.moviepark.config.CONSTANTS.dateTimeFormatter;
 
 @Controller
 @Slf4j
@@ -27,12 +31,22 @@ public class MovieParkController {
         this.databaseClient = databaseClient;
     }
 
+    @GetMapping("/change_cache_ttl/{ttl}")
+    @ResponseBody
+    public CommonResponse changeCacheTtl(@PathVariable String ttl) {
+        try {
+            databaseClient.changeCacheLifeTime(Integer.parseInt(ttl));
+            return VALID_DATA;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @GetMapping("/get_seances_for_date/{dateStr}")
     @ResponseBody
     public List<AllSeancesView> getAllTodaySeances(@PathVariable String dateStr) {
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate localDate = LocalDate.parse(dateStr, formatter);
+            LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
             return databaseClient.getAllSeancesForDate(localDate);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -82,7 +96,11 @@ public class MovieParkController {
     @GetMapping("/get_seance_info/{seanceId}")
     @ResponseBody
     public List<SeancePlacesEntity> getSeanceFullInfo(@PathVariable int seanceId) {
-        return databaseClient.getSeanceFullInfo(seanceId);
+        try {
+            return databaseClient.getSeanceFullInfo(seanceId);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     @GetMapping("/test")
