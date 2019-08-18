@@ -32,6 +32,10 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
             this.cacheTime = cacheTime;
         }
 
+        public boolean isExpired(long currentTimeMillis) {
+            return currentTimeMillis - cacheTime > cacheLifeTime;
+        }
+
         public boolean equals(final Object o) {
             if (o == this) return true;
             if (!(o instanceof CacheKey)) return false;
@@ -74,10 +78,14 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
             this.cacheTime = cacheTime;
             this.seanceFullInfo = seanceFullInfo;
         }
+
+        public boolean isExpired(long currentTimeMillis) {
+            return currentTimeMillis - cacheTime > cacheLifeTime;
+        }
     }
 
-    private long cacheLifeTime = 5000;
-    private final Map<CacheKey, CacheValue> ttlCache = new TreeMap<>();
+    private static long cacheLifeTime = 5000;
+    private static final Map<CacheKey, CacheValue> ttlCache = new TreeMap<>();
 
     public CacheValue getElementFromCache(int seanceId) {
         return ttlCache.get(CacheKey.of(seanceId));
@@ -104,8 +112,7 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
             return false;
         }
 
-        long delta = currentTime - value.getCacheTime();
-        if (delta > cacheLifeTime) {
+        if (value.isExpired(currentTime)) {
             ttlCache.remove(key);
             return false;
         }
@@ -117,8 +124,7 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
         List<CacheKey> keyList = new ArrayList(ttlCache.keySet()).subList(0, countOfElements);
 
         for (CacheKey key : keyList) {
-            long delta = currentTime - key.getCacheTime();
-            if (delta > cacheLifeTime) {
+            if (key.isExpired(currentTime)) {
                 ttlCache.remove(key);
             }
         }
