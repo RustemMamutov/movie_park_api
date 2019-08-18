@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-import ru.api.moviepark.data.RemoteDatabaseClient;
+import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
@@ -14,12 +14,12 @@ import java.time.LocalTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class RemoteDatabaseClientTest {
+public class RemoteDatabaseClientImplTest {
 
     @Autowired
-    private RemoteDatabaseClient remoteDatabaseClient;
+    private RemoteDatabaseClientImpl remoteDatabaseClientImpl;
 
-    public RemoteDatabaseClientTest() {
+    public RemoteDatabaseClientImplTest() {
     }
 
     @Test
@@ -41,7 +41,7 @@ public class RemoteDatabaseClientTest {
                 .hallId(1)
                 .basePrice(100)
                 .build();
-        remoteDatabaseClient.createNewSeance(input);
+        remoteDatabaseClientImpl.createNewSeance(input);
     }
 
     @Test

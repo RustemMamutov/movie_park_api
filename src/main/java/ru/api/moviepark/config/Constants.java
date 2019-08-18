@@ -2,7 +2,7 @@ package ru.api.moviepark.config;
 
 import java.time.format.DateTimeFormatter;
 
-public class CONSTANTS {
+public class Constants {
 
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -24,4 +24,6 @@ public class CONSTANTS {
             String.format("%s.%s", SCHEMA_NAME, MAIN_SCHEDULE_VIEW_NAME);
 
     public static final long MAX_CACHE_LIFE_TIME = 30000;
+
+    public static final long MIN_CACHE_LIFE_TIME = 2000;
 }

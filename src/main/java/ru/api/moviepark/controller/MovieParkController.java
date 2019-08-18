@@ -2,8 +2,14 @@ package ru.api.moviepark.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import ru.api.moviepark.data.RemoteDatabaseClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import ru.api.moviepark.data.dbclient.DatabaseClient;
+import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
@@ -12,34 +18,21 @@ import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 import java.time.LocalDate;
 import java.util.List;
 
-import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
-import static ru.api.moviepark.controller.CommonResponse.TABLE_FILLED;
+import static ru.api.moviepark.config.Constants.dateTimeFormatter;
+import static ru.api.moviepark.controller.CommonResponse.ERROR;
 import static ru.api.moviepark.controller.CommonResponse.PLACE_BLOCKED;
 import static ru.api.moviepark.controller.CommonResponse.PLACE_UNBLOCKED;
-import static ru.api.moviepark.controller.CommonResponse.ERROR;
-
-import static ru.api.moviepark.config.CONSTANTS.dateTimeFormatter;
+import static ru.api.moviepark.controller.CommonResponse.TABLE_FILLED;
 
 @Controller
 @Slf4j
 @RequestMapping("/movie_park")
 public class MovieParkController {
 
-    private RemoteDatabaseClient databaseClient;
+    private DatabaseClient databaseClient;
 
-    public MovieParkController(RemoteDatabaseClient databaseClient) {
+    public MovieParkController(RemoteDatabaseClientImpl databaseClient) {
         this.databaseClient = databaseClient;
-    }
-
-    @GetMapping("/change_cache_ttl/{ttl}")
-    @ResponseBody
-    public CommonResponse changeCacheTtl(@PathVariable String ttl) {
-        try {
-            databaseClient.changeCacheLifeTime(Integer.parseInt(ttl));
-            return VALID_DATA;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @GetMapping("/get_seances_for_date/{dateStr}")
@@ -49,7 +42,8 @@ public class MovieParkController {
             LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
             return databaseClient.getAllSeancesForDate(localDate);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
+            throw e;
         }
     }
 
@@ -89,7 +83,7 @@ public class MovieParkController {
             return TABLE_FILLED;
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            return ERROR;
         }
     }
 
@@ -107,5 +101,4 @@ public class MovieParkController {
     public String test() {
         return "test";
     }
-
 }

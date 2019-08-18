@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.api.moviepark.data.RemoteDatabaseClient;
+import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
@@ -19,7 +19,7 @@ import java.util.List;
 public class MovieParkApplicationTests {
 
     @Autowired
-    private RemoteDatabaseClient service;
+    private RemoteDatabaseClientImpl service;
 
     @Test
     public void test() {
@@ -53,4 +53,3 @@ public class MovieParkApplicationTests {
         service.createNewSeance(inputJson);
     }
 }
-
