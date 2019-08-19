@@ -1,5 +1,6 @@
 package ru.api.moviepark.data.remote;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.time.LocalTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class RemoteDatabaseClientTest {
 
     @Autowired
