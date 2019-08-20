@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import ru.api.moviepark.config.CONSTANTS;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import javax.persistence.Column;
@@ -14,12 +13,15 @@ import javax.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import static ru.api.moviepark.config.Constants.MAIN_SCHEDULE_TABLE_NAME;
+import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Entity
 @Builder
-@Table(name = CONSTANTS.MAIN_SCHEDULE_TABLE_NAME, schema = CONSTANTS.SCHEMA_NAME)
+@Table(name = MAIN_SCHEDULE_TABLE_NAME, schema = SCHEMA_NAME)
 public class MainScheduleEntity {
     @Id
     @Column(name = "seance_id")

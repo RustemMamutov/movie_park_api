@@ -11,7 +11,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static ru.api.moviepark.controller.CommonResponse.*;
+import static ru.api.moviepark.controller.CommonResponse.INVALID_DATE;
+import static ru.api.moviepark.controller.CommonResponse.INVALID_HALL;
+import static ru.api.moviepark.controller.CommonResponse.INVALID_MOVIE;
+import static ru.api.moviepark.controller.CommonResponse.INVALID_PRICE;
+import static ru.api.moviepark.controller.CommonResponse.INVALID_TIME_PERIOD;
+import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
 
 public class CheckInputUtil {
 
@@ -69,5 +74,4 @@ public class CheckInputUtil {
 
         return VALID_DATA;
     }
-
 }
