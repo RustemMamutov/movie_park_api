@@ -1,11 +1,13 @@
 package ru.api.moviepark.controller;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import ru.api.moviepark.actuator.RpsCalculatorUtil;
 import ru.api.moviepark.data.dbclient.DatabaseClient;
 import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
 
@@ -34,4 +36,11 @@ public class MovieParkServiceController {
             return ERROR;
         }
     }
+
+    @GetMapping("/get_rps_statistics")
+    @ResponseBody
+    public ObjectNode getRpsStatistics() {
+        return RpsCalculatorUtil.getRpsStatistics();
+    }
+
 }
