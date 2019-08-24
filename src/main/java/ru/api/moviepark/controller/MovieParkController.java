@@ -23,6 +23,7 @@ import static ru.api.moviepark.controller.CommonResponse.ERROR;
 import static ru.api.moviepark.controller.CommonResponse.PLACE_BLOCKED;
 import static ru.api.moviepark.controller.CommonResponse.PLACE_UNBLOCKED;
 import static ru.api.moviepark.controller.CommonResponse.TABLE_FILLED;
+import static ru.api.moviepark.actuator.RpsCalculatorUtil.incrRps;
 
 @Controller
 @Slf4j
@@ -91,6 +92,7 @@ public class MovieParkController {
     @ResponseBody
     public List<SeancePlacesEntity> getSeanceFullInfo(@PathVariable int seanceId) {
         try {
+            incrRps();
             return databaseClient.getSeanceFullInfo(seanceId);
         } catch (Exception e) {
             throw e;
