@@ -92,10 +92,7 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     public List<SeancePlacesEntity> getSeanceFullInfo(int seanceId) {
         log.info("Getting full info for seance id = " + seanceId);
         try {
-            long currentTime = System.currentTimeMillis();
-            fullInfoTtlCache.clearSomeFirstElementsInCache(currentTime);
-            if (fullInfoTtlCache.checkElementAndRemoveItIfExpired(seanceId, currentTime)) {
-
+            if (fullInfoTtlCache.checkCacheContainsElement(seanceId)) {
                 return ((CacheValue) fullInfoTtlCache.getElementFromCache(seanceId)).getSeanceFullInfo();
             } else {
                 List<SeancePlacesEntity> seanceFullInfo = seancesPlacesRepo.findAllBySeanceId(seanceId);
