@@ -12,9 +12,7 @@ public interface SeancesFullInfoTtlCache {
 
     void setCacheLifeTime(long cacheLifeTime);
 
-    boolean checkElementAndRemoveItIfExpired(int seanceId, long currentTime);
-
-    void clearSomeFirstElementsInCache(long currentTime);
+    boolean checkCacheContainsElement(int seanceId);
 
     void addSeanceInfoToCache(int seanceId, List<SeancePlacesEntity> seanceFullInfo);
 }

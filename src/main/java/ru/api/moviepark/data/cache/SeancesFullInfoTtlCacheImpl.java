@@ -1,69 +1,25 @@
 package ru.api.moviepark.data.cache;
 
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static ru.api.moviepark.config.Constants.MAX_CACHE_LIFE_TIME;
 import static ru.api.moviepark.config.Constants.MIN_CACHE_LIFE_TIME;
+import static ru.api.moviepark.config.Constants.SEANCE_INFO_CACHE_FLUSH_TIMEOUT;
 
 public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
 
-    @Getter
-    static class CacheKey implements Comparable {
-
-        private final int seanceId;
-        private final long cacheTime;
-
-        private static CacheKey of(int seanceId, long cacheTime) {
-            return new CacheKey(seanceId, cacheTime);
-        }
-
-        private static CacheKey of(int seanceId) {
-            return new CacheKey(seanceId, 0);
-        }
-
-        private CacheKey(int seanceId, long cacheTime) {
-            this.seanceId = seanceId;
-            this.cacheTime = cacheTime;
-        }
-
-        private boolean isExpired(long currentTimeMillis, long cacheLifeTime) {
-            return currentTimeMillis - cacheTime > cacheLifeTime;
-        }
-
-        public boolean equals(final Object o) {
-            if (o == this) return true;
-            if (!(o instanceof CacheKey)) return false;
-            final CacheKey other = (CacheKey) o;
-            if (!other.canEqual(this)) return false;
-            return this.seanceId == other.seanceId;
-        }
-
-        private boolean canEqual(final Object other) {
-            return other instanceof CacheKey;
-        }
-
-        public int hashCode() {
-            final int PRIME = 59;
-            int result = 1;
-            result = result * PRIME + this.seanceId;
-            return result;
-        }
-
-        @Override
-        public int compareTo(Object o) {
-            int seanceId = ((CacheKey) o).getSeanceId();
-            if (this.seanceId != seanceId) {
-                return Long.compare(((CacheKey) o).getCacheTime(), cacheTime);
-            }
-            return 0;
-        }
-    }
+    private Logger logger = LoggerFactory.getLogger(SeancesFullInfoTtlCacheImpl.class);
 
     @Getter
     public static class CacheValue {
@@ -85,14 +41,40 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
     }
 
     private long cacheLifeTime = 5000;
-    private final Map<CacheKey, CacheValue> ttlCache = new TreeMap<>();
+    private final Map<Integer, CacheValue> ttlCache = new ConcurrentHashMap<>();
+
+    public SeancesFullInfoTtlCacheImpl() {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread th = new Thread(r);
+                th.setDaemon(true);
+                return th;
+            }
+        });
+
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                logger.debug("Start flushing cache. Cache size before flush: {}", ttlCache.size());
+                long current = System.currentTimeMillis();
+                for (Map.Entry<Integer, CacheValue> entry : ttlCache.entrySet()) {
+                    if (entry.getValue().isExpired(current, cacheLifeTime)) {
+                        logger.debug("Remove element by seanceId: {}", entry.getKey());
+                        ttlCache.remove(entry.getKey());
+                    }
+                }
+                logger.debug("Finish flushing cache. Cache size after flush: {}", ttlCache.size());
+            }
+        }, 1, SEANCE_INFO_CACHE_FLUSH_TIMEOUT, SECONDS);
+    }
 
     public CacheValue getElementFromCache(int seanceId) {
-        return ttlCache.get(CacheKey.of(seanceId));
+        return ttlCache.get(seanceId);
     }
 
     public void removeElementFromCache(int seanceId) {
-        ttlCache.remove(CacheKey.of(seanceId));
+        ttlCache.remove(seanceId);
     }
 
     public void setCacheLifeTime(long cacheLifeTime) {
@@ -105,33 +87,12 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
         }
     }
 
-    public boolean checkElementAndRemoveItIfExpired(int seanceId, long currentTime) {
-        CacheKey key = CacheKey.of(seanceId);
-        CacheValue value = ttlCache.get(CacheKey.of(seanceId));
-        if (value == null) {
-            return false;
-        }
-
-        if (value.isExpired(currentTime, cacheLifeTime)) {
-            ttlCache.remove(key);
-            return false;
-        }
-        return true;
-    }
-
-    public void clearSomeFirstElementsInCache(long currentTime) {
-        int countOfElements = ttlCache.size() > 5 ? 5 : ttlCache.size();
-        List<CacheKey> keyList = new ArrayList(ttlCache.keySet()).subList(0, countOfElements);
-
-        for (CacheKey key : keyList) {
-            if (key.isExpired(currentTime, cacheLifeTime)) {
-                ttlCache.remove(key);
-            }
-        }
+    public boolean checkCacheContainsElement(int seanceId) {
+        return ttlCache.containsKey(seanceId);
     }
 
     public void addSeanceInfoToCache(int seanceId, List<SeancePlacesEntity> seanceFullInfo) {
         long currentTime = System.currentTimeMillis();
-        ttlCache.put(CacheKey.of(seanceId, currentTime), CacheValue.of(currentTime, seanceFullInfo));
+        ttlCache.put(seanceId, CacheValue.of(currentTime, seanceFullInfo));
     }
 }
