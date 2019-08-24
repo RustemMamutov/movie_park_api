@@ -26,4 +26,10 @@ public class Constants {
     public static final long MAX_CACHE_LIFE_TIME = 30000;
 
     public static final long MIN_CACHE_LIFE_TIME = 2000;
+
+    public static final int SEANCE_INFO_CACHE_FLUSH_TIMEOUT = 3;
+
+    public static final int RPS_MAP_FLUSH_TIMEOUT = 3;
+
+    public static final int RPS_LIFE_TIME = 120;
 }

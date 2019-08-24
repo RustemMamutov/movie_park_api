@@ -7,11 +7,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class HealthCheck implements HealthIndicator {
 
+    {
+        RpsCalculatorUtil.initiateRpsStoreFlushing();
+    }
+
     @Override
     public Health health() {
         int rps = RpsCalculatorUtil.getRps();
         if (rps > 150) {
-            return Health.down().build();
+            return Health.down()
+                    .withDetail("RPS", rps)
+                    .build();
         } else {
             return Health.up()
                     .withDetail("RPS", rps)
