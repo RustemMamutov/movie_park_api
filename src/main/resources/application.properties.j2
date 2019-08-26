@@ -1,0 +1,21 @@
+psql.datasource.url = {{ datasource_url }}
+psql.datasource.driverClassName = {{ datasource_driverClassName }}
+psql.datasource.username = {{ datasource_username }}
+psql.datasource.password = {{ datasource_password }}
+
+spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
+spring.jpa.show-sql = true
+spring.jpa.hibernate.ddl-auto = validate
+server.port = {{ server_port }}
+
+max.cache.life.time = {{ max_cache_life_time }}
+min.cache.life.time = {{ min_cache_life_time }}
+seance.info.cache.flush.timeout = {{ seance_info_cache_flush_timeout }}
+rps.map.flush.timeout = {{ rps_map_flush_timeout }}
+rps.life.time = {{ rps_life_time }}
+
+# actuator
+management.endpoints.web.base-path = /movie_park_service
+# HEALTH ENDPOINT
+management.endpoint.health.show-details = always
+management.health.diskSpace.enabled = false
