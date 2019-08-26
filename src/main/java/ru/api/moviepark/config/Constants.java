@@ -1,8 +1,17 @@
 package ru.api.moviepark.config;
 
+import org.springframework.stereotype.Component;
+
 import java.time.format.DateTimeFormatter;
 
+@Component
 public class Constants {
+
+    public static MovieParkEnvironment env;
+
+    public Constants(MovieParkEnvironment environment) {
+        env = environment;
+    }
 
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -22,14 +31,4 @@ public class Constants {
 
     public static final String MAIN_SCHEDULE_VIEW_FULL =
             String.format("%s.%s", SCHEMA_NAME, MAIN_SCHEDULE_VIEW_NAME);
-
-    public static final long MAX_CACHE_LIFE_TIME = 30000;
-
-    public static final long MIN_CACHE_LIFE_TIME = 2000;
-
-    public static final int SEANCE_INFO_CACHE_FLUSH_TIMEOUT = 3;
-
-    public static final int RPS_MAP_FLUSH_TIMEOUT = 3;
-
-    public static final int RPS_LIFE_TIME = 120;
 }

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.controller.CommonResponse;
 import ru.api.moviepark.data.cache.SeancesFullInfoTtlCache;
-import ru.api.moviepark.data.cache.SeancesFullInfoTtlCacheImpl;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.mappers.AllSeancesViewRowMapper;
@@ -36,14 +35,16 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
 
-    private SeancesFullInfoTtlCache fullInfoTtlCache = new SeancesFullInfoTtlCacheImpl();
+    private SeancesFullInfoTtlCache fullInfoTtlCache;
 
     public RemoteDatabaseClientImpl(JdbcTemplate jdbcTemplate,
                                     MainScheduleRepo mainScheduleRepo,
-                                    SeancesPlacesRepo seancesPlacesRepo) {
+                                    SeancesPlacesRepo seancesPlacesRepo,
+                                    SeancesFullInfoTtlCache fullInfoTtlCache) {
         this.jdbcTemplate = jdbcTemplate;
         this.mainScheduleRepo = mainScheduleRepo;
         this.seancesPlacesRepo = seancesPlacesRepo;
+        this.fullInfoTtlCache = fullInfoTtlCache;
     }
 
     public void changeCacheLifeTime(long cacheLifeTime) {

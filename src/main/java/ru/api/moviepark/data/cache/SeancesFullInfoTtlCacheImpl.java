@@ -3,6 +3,7 @@ package ru.api.moviepark.data.cache;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 
 import java.util.List;
@@ -13,10 +14,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static ru.api.moviepark.config.Constants.MAX_CACHE_LIFE_TIME;
-import static ru.api.moviepark.config.Constants.MIN_CACHE_LIFE_TIME;
-import static ru.api.moviepark.config.Constants.SEANCE_INFO_CACHE_FLUSH_TIMEOUT;
+import static ru.api.moviepark.config.Constants.env;
 
+@Service
 public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
 
     private Logger logger = LoggerFactory.getLogger(SeancesFullInfoTtlCacheImpl.class);
@@ -66,7 +66,7 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
                 }
                 logger.debug("Finish flushing cache. Cache size after flush: {}", ttlCache.size());
             }
-        }, 1, SEANCE_INFO_CACHE_FLUSH_TIMEOUT, SECONDS);
+        }, 1, env.getSeanceInfoCacheFlushTimeout(), SECONDS);
     }
 
     public CacheValue getElementFromCache(int seanceId) {
@@ -78,10 +78,10 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
     }
 
     public void setCacheLifeTime(long cacheLifeTime) {
-        if (cacheLifeTime > MAX_CACHE_LIFE_TIME) {
-            this.cacheLifeTime = MAX_CACHE_LIFE_TIME;
-        } else if (cacheLifeTime < MIN_CACHE_LIFE_TIME) {
-            this.cacheLifeTime = MIN_CACHE_LIFE_TIME;
+        if (cacheLifeTime > env.getMaxCacheLifeTime()) {
+            this.cacheLifeTime = env.getMaxCacheLifeTime();
+        } else if (cacheLifeTime < env.getMinCacheLifeTime()) {
+            this.cacheLifeTime = env.getMinCacheLifeTime();
         } else {
             this.cacheLifeTime = cacheLifeTime;
         }

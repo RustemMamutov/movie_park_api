@@ -12,9 +12,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static ru.api.moviepark.config.Constants.RPS_MAP_FLUSH_TIMEOUT;
-import static ru.api.moviepark.config.Constants.RPS_LIFE_TIME;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static ru.api.moviepark.config.Constants.env;
 
 public class RpsCalculatorUtil {
 
@@ -23,7 +22,7 @@ public class RpsCalculatorUtil {
 
     private static Logger logger = LoggerFactory.getLogger(RpsCalculatorUtil.class);
 
-    static void initiateRpsStoreFlushing(){
+    {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -39,14 +38,14 @@ public class RpsCalculatorUtil {
                 logger.debug("Start flushing rps statistics. Rps map size BEFORE flush: {}", rpsCountMap.size());
                 long currentSecond = System.currentTimeMillis()/1000;
                 for (long timeMoment : rpsCountMap.keySet()) {
-                    if (timeMoment < currentSecond - RPS_LIFE_TIME) {
+                    if (timeMoment < currentSecond - env.getRpsLifeTime()) {
                         logger.debug("Remove element by second: {}", timeMoment);
                         rpsCountMap.remove(timeMoment);
                     }
                 }
                 logger.debug("Finish flushing rps statistics. Rps map size AFTER flush: {}", rpsCountMap.size());
             }
-        }, 1, RPS_MAP_FLUSH_TIMEOUT, SECONDS);
+        }, 1, env.getRpsMapFlushTimeout(), SECONDS);
     }
 
     public synchronized static void incrRps(){
@@ -68,7 +67,7 @@ public class RpsCalculatorUtil {
         long previousSecond = System.currentTimeMillis()/1000 - 1;
         int totalCount = 0;
         for (Map.Entry<Long, Integer> entry : rpsCountMap.entrySet()){
-            if (previousSecond - RPS_LIFE_TIME <= entry.getKey() && entry.getKey() <= previousSecond) {
+            if (previousSecond - env.getRpsLifeTime() <= entry.getKey() && entry.getKey() <= previousSecond) {
                 answer.put(entry.getKey().toString(), entry.getValue());
                 totalCount += entry.getValue();
             }
