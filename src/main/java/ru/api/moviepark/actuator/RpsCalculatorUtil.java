@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.api.moviepark.config.MovieParkEnvironment;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -13,7 +14,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static ru.api.moviepark.config.Constants.env;
 
 public class RpsCalculatorUtil {
 
@@ -22,7 +22,10 @@ public class RpsCalculatorUtil {
 
     private static Logger logger = LoggerFactory.getLogger(RpsCalculatorUtil.class);
 
-    {
+    private static MovieParkEnvironment env;
+
+    public static void startRpsTimeoutFlushProcess(MovieParkEnvironment env) {
+        RpsCalculatorUtil.env = env;
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {

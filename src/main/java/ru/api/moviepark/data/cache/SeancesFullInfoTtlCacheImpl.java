@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.api.moviepark.config.MovieParkEnvironment;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static ru.api.moviepark.config.Constants.env;
 
 @Service
 public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
@@ -43,7 +43,10 @@ public class SeancesFullInfoTtlCacheImpl implements SeancesFullInfoTtlCache {
     private long cacheLifeTime = 5000;
     private final Map<Integer, CacheValue> ttlCache = new ConcurrentHashMap<>();
 
-    public SeancesFullInfoTtlCacheImpl() {
+    private MovieParkEnvironment env;
+
+    public SeancesFullInfoTtlCacheImpl(MovieParkEnvironment env) {
+        this.env = env;
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {

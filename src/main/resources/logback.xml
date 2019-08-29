@@ -9,7 +9,7 @@
     </appender>
 
 <!--    <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>-->
-    <property name="LOG_DIR" value="/opt/movie_park_api/"/>
+    <property name="LOG_DIR" value="/opt/MP_api/"/>
 
     <appender name="movieParkLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
