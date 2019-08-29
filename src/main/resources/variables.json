@@ -1,0 +1,12 @@
+{
+  "datasource_url" : "",
+  "datasource_driverClassName" : "",
+  "datasource_username" : "",
+  "datasource_password" : "",
+  "server_port" : "",
+  "max_cache_life_time" : "",
+  "min_cache_life_time" : "",
+  "seance_info_cache_flush_timeout" : "",
+  "rps_map_flush_timeout" : "",
+  "rps_life_time" : ""
+}
