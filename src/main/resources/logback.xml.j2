@@ -1,3 +1,5 @@
+<!--RENDER FROM J2 TEMPLATE-->
+
 <configuration>
 
     <property name="pattern" value="%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
@@ -8,7 +10,7 @@
         </encoder>
     </appender>
 
-    <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>
+    <property name="LOG_DIR" value="{{log_dir_path}}"/>
 
     <appender name="movieParkLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
