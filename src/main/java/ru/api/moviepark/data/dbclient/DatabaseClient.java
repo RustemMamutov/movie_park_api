@@ -1,9 +1,10 @@
 package ru.api.moviepark.data.dbclient;
 
 import ru.api.moviepark.controller.CommonResponse;
+import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
-import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
@@ -25,13 +26,18 @@ public interface DatabaseClient {
     void updateScheduleTable(int days);
 
     /**
-     * Get info about all places in hall for current seance.
+     * Get info about all places in hall.
+     */
+    List<HallsEntity> getHallFullInfo(int hallId);
+
+    /**
+     * Get info about all places for current seance.
      */
     List<SeancePlacesEntity> getSeanceFullInfo(int seanceId);
 
     /**
-     * Block/unblock the place in hall for current seance.
+     * Block the place in hall for current seance.
      */
-    void blockOrUnblockPlaceOnSeance(BlockPlaceInput inputJson);
+    void blockOrUnblockPlaceOnSeance(BlockUnblockPlaceInput inputJson);
 
 }

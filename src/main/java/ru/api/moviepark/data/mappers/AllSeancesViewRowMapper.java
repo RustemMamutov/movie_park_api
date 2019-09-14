@@ -14,8 +14,11 @@ public class AllSeancesViewRowMapper implements RowMapper {
                 .seanceDate(rs.getDate("seance_date"))
                 .startTime(rs.getTime("start_time"))
                 .endTime(rs.getTime("end_time"))
+                .movieParkName(rs.getString("movie_park_name"))
                 .movieName(rs.getString("movie_name"))
                 .hallId(rs.getInt("hall_id"))
+                .basePrice(rs.getInt("base_price"))
+                .vipPrice(rs.getInt("vip_price"))
                 .build();
     }
 }

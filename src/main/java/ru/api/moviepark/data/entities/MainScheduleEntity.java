@@ -36,6 +36,9 @@ public class MainScheduleEntity {
     @Column(name = "end_time")
     LocalTime endTime;
 
+    @Column(name = "movie_park_id")
+    Integer movieParkId;
+
     @Column(name = "movie_id")
     Integer movieId;
 
@@ -45,6 +48,9 @@ public class MainScheduleEntity {
     @Column(name = "base_price")
     Integer basePrice;
 
+    @Column(name = "vip_price")
+    Integer vipPrice;
+
     public static MainScheduleEntity createMainScheduleEntity(Integer seanceId, CreateSeanceInput inputJson) {
         return MainScheduleEntity
                 .builder()
@@ -52,9 +58,11 @@ public class MainScheduleEntity {
                 .seanceDate(inputJson.getDate())
                 .startTime(inputJson.getStartTime())
                 .endTime(inputJson.getEndTime())
+                .movieParkId(inputJson.getMovieParkId())
                 .movieId(inputJson.getMovieId())
                 .hallId(inputJson.getHallId())
                 .basePrice(inputJson.getBasePrice())
+                .vipPrice(inputJson.getVipPrice())
                 .build();
     }
 }

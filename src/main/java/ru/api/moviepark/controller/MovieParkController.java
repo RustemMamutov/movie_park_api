@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.api.moviepark.data.dbclient.DatabaseClient;
 import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
+import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
-import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
@@ -63,7 +64,7 @@ public class MovieParkController {
 
     @PostMapping("/block_unblock_place")
     @ResponseBody
-    public CommonResponse blockOrUnblockPlace(@RequestBody BlockPlaceInput inputJson) {
+    public CommonResponse blockOrUnblockPlace(@RequestBody BlockUnblockPlaceInput inputJson) {
         try {
             databaseClient.blockOrUnblockPlaceOnSeance(inputJson);
             if (inputJson.getBlocked()) {
@@ -88,6 +89,17 @@ public class MovieParkController {
             return ERROR;
         }
     }
+
+    @GetMapping("/get_hall_info/{hallId}")
+    @ResponseBody
+    public List<HallsEntity> getHallFullInfo(@PathVariable int hallId) {
+        try {
+            return databaseClient.getHallFullInfo(hallId);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
 
     @GetMapping("/get_seance_info/{seanceId}")
     @ResponseBody

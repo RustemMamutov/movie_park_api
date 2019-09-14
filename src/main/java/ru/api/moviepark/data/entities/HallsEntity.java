@@ -26,12 +26,14 @@ public class HallsEntity {
     private Integer hallId;
 
     @Id
-    @Column(name = "row")
-    private Integer row;
+    @Column(name = "place_id")
+    private Integer placeId;
 
-    @Id
-    @Column(name = "place")
-    private Integer place;
+    @Column(name = "coord_x")
+    private Integer coordX;
+
+    @Column(name = "coord_y")
+    private Integer coordY;
 
     @Column(name = "is_vip")
     private Boolean isVip;

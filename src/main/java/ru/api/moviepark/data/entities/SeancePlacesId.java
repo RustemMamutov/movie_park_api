@@ -10,7 +10,5 @@ import java.io.Serializable;
 public class SeancePlacesId implements Serializable {
     private Integer seanceId;
 
-    private Integer hallRow;
-
-    private Integer place;
+    private Integer placeId;
 }
