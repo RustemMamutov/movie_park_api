@@ -14,9 +14,11 @@ public interface DatabaseClient {
 
     void changeCacheLifeTime(long cacheLifeTime);
 
-    List<AllSeancesView> getAllSeances();
+    AllSeancesView getSeanceById(int seanceId);
 
     List<AllSeancesView> getAllSeancesForDate(LocalDate date);
+
+    List<AllSeancesView> getAllSeances();
 
     CommonResponse createNewSeance(CreateSeanceInput inputJson);
 
@@ -28,12 +30,12 @@ public interface DatabaseClient {
     /**
      * Get info about all places in hall.
      */
-    List<HallsEntity> getHallFullInfo(int hallId);
+    List<HallsEntity> getHallPlacesInfo(int hallId);
 
     /**
      * Get info about all places for current seance.
      */
-    List<SeancePlacesEntity> getSeanceFullInfo(int seanceId);
+    List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId);
 
     /**
      * Block the place in hall for current seance.

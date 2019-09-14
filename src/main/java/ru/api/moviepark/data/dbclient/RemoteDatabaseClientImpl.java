@@ -56,9 +56,9 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
         fullInfoTtlCache.setCacheLifeTime(cacheLifeTime);
     }
 
-    public List<AllSeancesView> getAllSeances() {
-        String sqlQuery = String.format("select * from %s;", MAIN_SCHEDULE_VIEW_FULL);
-        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+    public AllSeancesView getSeanceById(int seanceId) {
+        String sqlQuery = String.format("select * from %s where seance_id = '%s'", MAIN_SCHEDULE_VIEW_FULL, seanceId);
+        return (AllSeancesView) jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper()).get(0);
     }
 
     public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
@@ -66,6 +66,12 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
                 MAIN_SCHEDULE_VIEW_FULL, date.format(dateTimeFormatter));
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
+
+    public List<AllSeancesView> getAllSeances() {
+        String sqlQuery = String.format("select * from %s;", MAIN_SCHEDULE_VIEW_FULL);
+        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+    }
+
 
     public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
@@ -95,14 +101,14 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     /**
      * Get info about all places in hall.
      */
-    public List<HallsEntity> getHallFullInfo(int hallId) {
+    public List<HallsEntity> getHallPlacesInfo(int hallId) {
         return hallsRepo.findAllByHallId(hallId).orElse(null);
     }
 
     /**
      * Get info about all places for current seance.
      */
-    public List<SeancePlacesEntity> getSeanceFullInfo(int seanceId) {
+    public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
         log.info("Getting full info for seance id = " + seanceId);
         try {
             if (fullInfoTtlCache.checkCacheContainsElement(seanceId)) {

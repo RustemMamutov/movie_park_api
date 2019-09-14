@@ -38,9 +38,20 @@ public class MovieParkController {
         this.databaseClient = databaseClient;
     }
 
+    @GetMapping("/get_seance/{seanceId}")
+    @ResponseBody
+    public AllSeancesView getAllSeancesByDate(@PathVariable int seanceId) {
+        try {
+            return databaseClient.getSeanceById(seanceId);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+    }
+
     @GetMapping("/get_seances_for_date/{dateStr}")
     @ResponseBody
-    public List<AllSeancesView> getAllTodaySeances(@PathVariable String dateStr) {
+    public List<AllSeancesView> getAllSeancesByDate(@PathVariable String dateStr) {
         try {
             LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
             return databaseClient.getAllSeancesForDate(localDate);
@@ -90,22 +101,22 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get_hall_info/{hallId}")
+    @GetMapping("/get_hall_places_info/{hallId}")
     @ResponseBody
     public List<HallsEntity> getHallFullInfo(@PathVariable int hallId) {
         try {
-            return databaseClient.getHallFullInfo(hallId);
+            return databaseClient.getHallPlacesInfo(hallId);
         } catch (Exception e) {
             throw e;
         }
     }
 
 
-    @GetMapping("/get_seance_info/{seanceId}")
+    @GetMapping("/get_seance_places_info/{seanceId}")
     @ResponseBody
     public List<SeancePlacesEntity> getSeanceFullInfo(@PathVariable int seanceId) {
         try {
-            return databaseClient.getSeanceFullInfo(seanceId);
+            return databaseClient.getSeancePlacesInfo(seanceId);
         } catch (Exception e) {
             throw e;
         }
