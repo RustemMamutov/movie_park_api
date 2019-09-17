@@ -29,20 +29,8 @@ public class SeancePlacesEntity {
     @Column(name = "seance_id")
     private Integer seanceId;
 
-    @Column(name = "hall_id")
-    private Integer hallId;
-
-    @Id
-    @Column(name = "hall_row")
-    private Integer hallRow;
-
-    @Id
-    private Integer place;
-
-    @Column(name = "is_vip")
-    private Boolean isVip;
-
-    private Integer price;
+    @Column(name = "place_id")
+    private Integer placeId;
 
     private Boolean blocked;
 }

@@ -1,9 +1,10 @@
 package ru.api.moviepark.data.dbclient;
 
 import ru.api.moviepark.controller.CommonResponse;
+import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
-import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
@@ -13,9 +14,11 @@ public interface DatabaseClient {
 
     void changeCacheLifeTime(long cacheLifeTime);
 
-    List<AllSeancesView> getAllSeances();
+    AllSeancesView getSeanceById(int seanceId);
 
     List<AllSeancesView> getAllSeancesForDate(LocalDate date);
+
+    List<AllSeancesView> getAllSeances();
 
     CommonResponse createNewSeance(CreateSeanceInput inputJson);
 
@@ -25,13 +28,18 @@ public interface DatabaseClient {
     void updateScheduleTable(int days);
 
     /**
-     * Get info about all places in hall for current seance.
+     * Get info about all places in hall.
      */
-    List<SeancePlacesEntity> getSeanceFullInfo(int seanceId);
+    List<HallsEntity> getHallPlacesInfo(int hallId);
 
     /**
-     * Block/unblock the place in hall for current seance.
+     * Get info about all places for current seance.
      */
-    void blockOrUnblockPlaceOnSeance(BlockPlaceInput inputJson);
+    List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId);
+
+    /**
+     * Block the place in hall for current seance.
+     */
+    void blockOrUnblockPlaceOnSeance(BlockUnblockPlaceInput inputJson);
 
 }

@@ -15,7 +15,7 @@ public class Constants {
 
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public static final String SCHEMA_NAME = "movie_park";
+    public static final String SCHEMA_NAME = "movie_park_develop";
 
     public static final String MAIN_SCHEDULE_TABLE_NAME = "main_schedule";
 
@@ -23,7 +23,7 @@ public class Constants {
 
     public static final String MOVIES_TABLE_NAME = "movies";
 
-    public static final String PRICES_DELTA_TABLE_NAME = "prices_delta";
+    public static final String MOVIE_PARKS_TABLE_NAME = "movie_parks";
 
     public static final String SEANCE_PLACES_TABLE_NAME = "seances_places";
 

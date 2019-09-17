@@ -28,9 +28,18 @@ public class AllSeancesView {
     @Column(name = "end_time")
     Time endTime;
 
+    @Column(name = "movie_park_name")
+    String movieParkName;
+
     @Column(name = "movie_name")
     String movieName;
 
     @Column(name = "hall_id")
     Integer hallId;
+
+    @Column(name = "base_price")
+    Integer basePrice;
+
+    @Column(name = "vip_price")
+    Integer vipPrice;
 }

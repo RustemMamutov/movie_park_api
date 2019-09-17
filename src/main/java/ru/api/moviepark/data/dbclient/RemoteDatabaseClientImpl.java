@@ -6,13 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.controller.CommonResponse;
 import ru.api.moviepark.data.cache.SeancesFullInfoTtlCache;
+import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.mappers.AllSeancesViewRowMapper;
+import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.AllSeancesView;
-import ru.api.moviepark.data.valueobjects.BlockPlaceInput;
+import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
@@ -32,16 +34,19 @@ import static ru.api.moviepark.util.CheckInputUtil.checkCreateSeanceInput;
 public class RemoteDatabaseClientImpl implements DatabaseClient {
 
     private final JdbcTemplate jdbcTemplate;
+    private final HallsRepo hallsRepo;
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
 
     private SeancesFullInfoTtlCache fullInfoTtlCache;
 
     public RemoteDatabaseClientImpl(JdbcTemplate jdbcTemplate,
+                                    HallsRepo hallsRepo,
                                     MainScheduleRepo mainScheduleRepo,
                                     SeancesPlacesRepo seancesPlacesRepo,
                                     SeancesFullInfoTtlCache fullInfoTtlCache) {
         this.jdbcTemplate = jdbcTemplate;
+        this.hallsRepo = hallsRepo;
         this.mainScheduleRepo = mainScheduleRepo;
         this.seancesPlacesRepo = seancesPlacesRepo;
         this.fullInfoTtlCache = fullInfoTtlCache;
@@ -51,9 +56,9 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
         fullInfoTtlCache.setCacheLifeTime(cacheLifeTime);
     }
 
-    public List<AllSeancesView> getAllSeances() {
-        String sqlQuery = String.format("select * from %s;", MAIN_SCHEDULE_VIEW_FULL);
-        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+    public AllSeancesView getSeanceById(int seanceId) {
+        String sqlQuery = String.format("select * from %s where seance_id = '%s'", MAIN_SCHEDULE_VIEW_FULL, seanceId);
+        return (AllSeancesView) jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper()).get(0);
     }
 
     public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
@@ -61,6 +66,12 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
                 MAIN_SCHEDULE_VIEW_FULL, date.format(dateTimeFormatter));
         return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
     }
+
+    public List<AllSeancesView> getAllSeances() {
+        String sqlQuery = String.format("select * from %s;", MAIN_SCHEDULE_VIEW_FULL);
+        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+    }
+
 
     public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
@@ -88,9 +99,16 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     }
 
     /**
-     * Get info about all places in hall for current seance.
+     * Get info about all places in hall.
      */
-    public List<SeancePlacesEntity> getSeanceFullInfo(int seanceId) {
+    public List<HallsEntity> getHallPlacesInfo(int hallId) {
+        return hallsRepo.findAllByHallId(hallId).orElse(null);
+    }
+
+    /**
+     * Get info about all places for current seance.
+     */
+    public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
         log.info("Getting full info for seance id = " + seanceId);
         try {
             if (fullInfoTtlCache.checkCacheContainsElement(seanceId)) {
@@ -110,12 +128,12 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
      * Block/unblock the place in hall for current seance.
      */
     @Transactional
-    public void blockOrUnblockPlaceOnSeance(BlockPlaceInput inputJson) {
-        log.info("Blocking place in seance");
+    public void blockOrUnblockPlaceOnSeance(BlockUnblockPlaceInput inputJson) {
+        log.info("Updating places {} in seance {}. Set value: {}",
+                inputJson.getPlaceIdList(), inputJson.getSeanceId(), inputJson.getBlocked());
         try {
             int seanceId = inputJson.getSeanceId();
-            seancesPlacesRepo.blockOrUnblockThePlace(seanceId, inputJson.getRow(),
-                    inputJson.getPlace(), inputJson.getBlocked());
+            seancesPlacesRepo.blockOrUnblockThePlace(seanceId, inputJson.getPlaceIdList(), inputJson.getBlocked());
             fullInfoTtlCache.removeElementFromCache(seanceId);
         } catch (Exception e) {
             log.error(e.getMessage());

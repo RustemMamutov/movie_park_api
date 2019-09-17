@@ -6,13 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Builder
-public class BlockPlaceInput {
+public class BlockUnblockPlaceInput {
     private Integer seanceId;
-    private Integer row;
-    private Integer place;
     private Boolean blocked;
+    private List<Integer> placeIdList;
 }

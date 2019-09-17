@@ -10,18 +10,19 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import static ru.api.moviepark.config.Constants.MOVIES_TABLE_NAME;
+import static ru.api.moviepark.config.Constants.MOVIE_PARKS_TABLE_NAME;
 import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Entity
-@Table(name = MOVIES_TABLE_NAME, schema = SCHEMA_NAME)
-public class MoviesEntity {
+@Table(name = MOVIE_PARKS_TABLE_NAME, schema = SCHEMA_NAME)
+public class MovieParksEntity {
     @Id
     @Column(name = "id")
-    private Integer movieId;
+    private Integer movieParkId;
 
     @Column(name = "name")
-    private String movieName;
+    private String movieParkName;
 }

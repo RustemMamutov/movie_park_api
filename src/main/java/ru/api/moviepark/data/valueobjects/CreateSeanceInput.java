@@ -17,7 +17,9 @@ public class CreateSeanceInput {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
+    private Integer movieParkId;
     private Integer movieId;
     private Integer hallId;
     private Integer basePrice;
+    private Integer vipPrice;
 }
