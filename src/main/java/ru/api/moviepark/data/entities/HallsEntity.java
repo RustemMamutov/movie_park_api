@@ -28,4 +28,7 @@ public class HallsEntity {
     @Id
     @Column(name = "place_id")
     private Integer placeId;
+
+    @Column(name = "is_vip")
+    private Boolean isVip;
 }
