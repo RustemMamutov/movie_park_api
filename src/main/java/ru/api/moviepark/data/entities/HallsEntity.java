@@ -28,13 +28,4 @@ public class HallsEntity {
     @Id
     @Column(name = "place_id")
     private Integer placeId;
-
-    @Column(name = "coord_x")
-    private Integer coordX;
-
-    @Column(name = "coord_y")
-    private Integer coordY;
-
-    @Column(name = "is_vip")
-    private Boolean isVip;
 }
