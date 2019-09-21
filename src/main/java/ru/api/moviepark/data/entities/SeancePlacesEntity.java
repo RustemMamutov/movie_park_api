@@ -13,8 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Table;
 
-import static ru.api.moviepark.config.Constants.SEANCE_PLACES_TABLE_NAME;
 import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
+import static ru.api.moviepark.config.Constants.SEANCE_PLACES_TABLE_NAME;
 
 @AllArgsConstructor
 @NoArgsConstructor

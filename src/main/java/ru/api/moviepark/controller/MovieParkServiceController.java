@@ -16,7 +16,7 @@ import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
 
 @Controller
 @Slf4j
-@RequestMapping("/movie_park_service")
+@RequestMapping("/movie-park-service")
 public class MovieParkServiceController {
 
     private DatabaseClient databaseClient;
@@ -25,7 +25,7 @@ public class MovieParkServiceController {
         this.databaseClient = databaseClient;
     }
 
-    @GetMapping("/change_cache_ttl/{ttl}")
+    @GetMapping("/change-cache-ttl/{ttl}")
     @ResponseBody
     public CommonResponse changeCacheTtl(@PathVariable String ttl) {
         try {
@@ -37,10 +37,9 @@ public class MovieParkServiceController {
         }
     }
 
-    @GetMapping("/get_rps_statistics")
+    @GetMapping("/get-rps-statistics")
     @ResponseBody
     public ObjectNode getRpsStatistics() {
         return RpsCalculatorUtil.getRpsStatistics();
     }
-
 }

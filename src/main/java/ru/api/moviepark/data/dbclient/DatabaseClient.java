@@ -9,6 +9,7 @@ import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface DatabaseClient {
 
@@ -19,6 +20,10 @@ public interface DatabaseClient {
     List<AllSeancesView> getAllSeancesForDate(LocalDate date);
 
     List<AllSeancesView> getAllSeances();
+
+    Map<Integer, String> getAllMoviesByDate(LocalDate date);
+
+    Map<String, List<AllSeancesView>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date);
 
     CommonResponse createNewSeance(CreateSeanceInput inputJson);
 
@@ -41,5 +46,4 @@ public interface DatabaseClient {
      * Block the place in hall for current seance.
      */
     void blockOrUnblockPlaceOnSeance(BlockUnblockPlaceInput inputJson);
-
 }

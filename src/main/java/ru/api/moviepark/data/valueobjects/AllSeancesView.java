@@ -28,8 +28,14 @@ public class AllSeancesView {
     @Column(name = "end_time")
     Time endTime;
 
+    @Column(name = "movie_park_id")
+    Integer movieParkId;
+
     @Column(name = "movie_park_name")
     String movieParkName;
+
+    @Column(name = "movie_id")
+    Integer movieId;
 
     @Column(name = "movie_name")
     String movieName;

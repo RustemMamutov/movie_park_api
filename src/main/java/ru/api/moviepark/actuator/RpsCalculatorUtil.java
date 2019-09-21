@@ -39,7 +39,7 @@ public class RpsCalculatorUtil {
             @Override
             public void run() {
                 logger.debug("Start flushing rps statistics. Rps map size BEFORE flush: {}", rpsCountMap.size());
-                long currentSecond = System.currentTimeMillis()/1000;
+                long currentSecond = System.currentTimeMillis() / 1000;
                 for (long timeMoment : rpsCountMap.keySet()) {
                     if (timeMoment < currentSecond - env.getRpsLifeTime()) {
                         logger.debug("Remove element by second: {}", timeMoment);
@@ -51,25 +51,25 @@ public class RpsCalculatorUtil {
         }, 1, env.getRpsMapFlushTimeout(), SECONDS);
     }
 
-    public synchronized static void incrRps(){
-        long currentSecond = System.currentTimeMillis()/1000;
-        if (!rpsCountMap.containsKey(currentSecond)){
+    public synchronized static void incrRps() {
+        long currentSecond = System.currentTimeMillis() / 1000;
+        if (!rpsCountMap.containsKey(currentSecond)) {
             rpsCountMap.put(currentSecond, 0);
             currentRps.set(0);
         }
         rpsCountMap.put(currentSecond, currentRps.incrementAndGet());
     }
 
-    static int getRps(){
-        long previousSecond = System.currentTimeMillis()/1000 - 1;
+    static int getRps() {
+        long previousSecond = System.currentTimeMillis() / 1000 - 1;
         return rpsCountMap.getOrDefault(previousSecond, 0);
     }
 
     public static ObjectNode getRpsStatistics() {
         ObjectNode answer = JsonNodeFactory.instance.objectNode();
-        long previousSecond = System.currentTimeMillis()/1000 - 1;
+        long previousSecond = System.currentTimeMillis() / 1000 - 1;
         int totalCount = 0;
-        for (Map.Entry<Long, Integer> entry : rpsCountMap.entrySet()){
+        for (Map.Entry<Long, Integer> entry : rpsCountMap.entrySet()) {
             if (previousSecond - env.getRpsLifeTime() <= entry.getKey() && entry.getKey() <= previousSecond) {
                 answer.put(entry.getKey().toString(), entry.getValue());
                 totalCount += entry.getValue();
