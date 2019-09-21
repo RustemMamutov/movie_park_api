@@ -9,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import static ru.api.moviepark.config.Constants.MOVIES_TABLE_NAME;
 import static ru.api.moviepark.config.Constants.MOVIE_PARKS_TABLE_NAME;
 import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
 

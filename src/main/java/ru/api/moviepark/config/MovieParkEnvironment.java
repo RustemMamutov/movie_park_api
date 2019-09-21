@@ -10,7 +10,7 @@ public class MovieParkEnvironment {
     private long maxCacheLifeTime;
 
     @Value("${min.cache.life.time}")
-    private long minCacheLifeTime ;
+    private long minCacheLifeTime;
 
     @Value("${seance.info.cache.flush.timeout}")
     private int seanceInfoCacheFlushTimeout;
