@@ -19,6 +19,7 @@ import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static ru.api.moviepark.config.Constants.dateTimeFormatter;
 import static ru.api.moviepark.controller.CommonResponse.ERROR;
@@ -29,7 +30,7 @@ import static ru.api.moviepark.controller.CommonResponse.TABLE_FILLED;
 @Controller
 @Slf4j
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping("/movie_park")
+@RequestMapping("/movie-park")
 public class MovieParkController {
 
     private DatabaseClient databaseClient;
@@ -38,7 +39,7 @@ public class MovieParkController {
         this.databaseClient = databaseClient;
     }
 
-    @GetMapping("/get_seance/{seanceId}")
+    @GetMapping("/get-seance-info/{seanceId}")
     @ResponseBody
     public AllSeancesView getAllSeancesByDate(@PathVariable int seanceId) {
         try {
@@ -49,7 +50,7 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get_seances_for_date/{dateStr}")
+    @GetMapping("/get-seances-for-date/{dateStr}")
     @ResponseBody
     public List<AllSeancesView> getAllSeancesByDate(@PathVariable String dateStr) {
         try {
@@ -61,19 +62,34 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get_all_seances")
+    @GetMapping("/get-all-seances")
     @ResponseBody
     public List<AllSeancesView> getAllSeances() {
         return databaseClient.getAllSeances();
     }
 
-    @PostMapping("/add_seance")
+    @GetMapping("/get-all-movies-by-date/{dateStr}")
+    @ResponseBody
+    public Map<Integer, String> getAllMoviesByDate(@PathVariable String dateStr) {
+        LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
+        return databaseClient.getAllMoviesByDate(localDate);
+    }
+
+    @GetMapping("/get-seances-by-movie-and-date/{movieId}/{dateStr}")
+    @ResponseBody
+    public Map<String, List<AllSeancesView>> getAllSeancesByMovieAndDateGroupByMoviePark(
+            @PathVariable int movieId, @PathVariable String dateStr) {
+        LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
+        return databaseClient.getAllSeancesByMovieAndDateGroupByMoviePark(movieId, localDate);
+    }
+
+    @PostMapping("/add-seance")
     @ResponseBody
     public CommonResponse addSeance(@RequestBody CreateSeanceInput inputJson) {
         return databaseClient.createNewSeance(inputJson);
     }
 
-    @PostMapping("/block_unblock_place")
+    @PostMapping("/block-unblock-place")
     @ResponseBody
     public CommonResponse blockOrUnblockPlace(@RequestBody BlockUnblockPlaceInput inputJson) {
         try {
@@ -89,7 +105,7 @@ public class MovieParkController {
         }
     }
 
-    @PostMapping("/update_seances_schedule/{days}")
+    @PostMapping("/update-seances-schedule/{days}")
     @ResponseBody
     public CommonResponse updateScheduleTable(@PathVariable int days) {
         try {
@@ -101,7 +117,7 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get_hall_places_info/{hallId}")
+    @GetMapping("/get-hall-places-info/{hallId}")
     @ResponseBody
     public List<HallsEntity> getHallFullInfo(@PathVariable int hallId) {
         try {
@@ -112,7 +128,7 @@ public class MovieParkController {
     }
 
 
-    @GetMapping("/get_seance_places_info/{seanceId}")
+    @GetMapping("/get-seance-places-info/{seanceId}")
     @ResponseBody
     public List<SeancePlacesEntity> getSeanceFullInfo(@PathVariable int seanceId) {
         try {
