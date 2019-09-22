@@ -41,6 +41,8 @@ public class CheckInputUtil {
 
     public static CommonResponse checkCreateSeanceInput(CreateSeanceInput inputJson) {
         LocalDate inputDate = inputJson.getDate();
+        int inputHallId = inputJson.getHallId();
+
         if (inputDate.isBefore(LocalDate.now())) {
             return INVALID_DATE;
         }
@@ -49,7 +51,7 @@ public class CheckInputUtil {
             return INVALID_MOVIE;
         }
 
-        if (!hallsRepo.checkIdExists(inputJson.getHallId()).orElse(false)) {
+        if (!hallsRepo.checkIdExists(inputHallId).orElse(false)) {
             return INVALID_HALL;
         }
 
@@ -57,19 +59,23 @@ public class CheckInputUtil {
             return INVALID_PRICE;
         }
 
-        int inputHallId = inputJson.getHallId();
         LocalTime inputStartTime = inputJson.getStartTime();
         LocalTime inputEndTime = inputJson.getEndTime();
 
+        if (inputEndTime.isBefore(inputStartTime)) {
+            return INVALID_TIME_PERIOD;
+        }
+
         List<MainScheduleEntity> allSeancesForDate = mainScheduleRepo.findSeancesEntityBySeanceDateAndHallId(inputDate, inputHallId);
-        for (MainScheduleEntity entity : allSeancesForDate) {
-            LocalTime localStartTime = entity.getStartTime();
-            LocalTime localEndTime = entity.getEndTime();
-            boolean startChecker = localStartTime.isBefore(inputStartTime) && inputStartTime.isBefore(localEndTime);
-            boolean endChecker = localStartTime.isBefore(inputEndTime) && inputEndTime.isBefore(localEndTime);
-            if (startChecker || endChecker) {
-                return INVALID_TIME_PERIOD;
+        for (MainScheduleEntity currentSeance : allSeancesForDate) {
+            LocalTime currentStartTime = currentSeance.getStartTime();
+            LocalTime currentEndTime = currentSeance.getEndTime();
+
+            if (inputStartTime.isAfter(currentEndTime) || inputEndTime.isBefore(currentStartTime)) {
+                continue;
             }
+
+            return INVALID_TIME_PERIOD;
         }
 
         return VALID_DATA;
