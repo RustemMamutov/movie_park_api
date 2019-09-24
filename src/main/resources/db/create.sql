@@ -39,7 +39,7 @@ create table movie_park_develop.main_schedule (
 create table movie_park_develop.seances_places (
     seance_id int4 NOT NULL,
     place_id int4 NOT NULL,
-    "blocked" bool NOT NULL,
+    blocked bool NOT NULL,
     PRIMARY KEY (seance_id, place_id)
 );
 
