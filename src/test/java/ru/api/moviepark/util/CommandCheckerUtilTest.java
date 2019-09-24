@@ -60,9 +60,6 @@ public class CommandCheckerUtilTest {
 
     @Test
     public void Should_checkPostQuery() {
-        Optional<List<HallsEntity>> resultOpt = hallsRepo.findAllByHallId(101);
-        List<HallsEntity> result = resultOpt.get();
-
         seanceInput.setStartTime(LocalTime.of(7,0));
         seanceInput.setEndTime(LocalTime.of(8,0));
         CommonResponse checkInputResult = CheckInputUtil.checkCreateSeanceInput(seanceInput);
