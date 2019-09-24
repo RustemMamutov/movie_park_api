@@ -20,8 +20,8 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "psqlEntityManagerFactory",
-        transactionManagerRef = "psqlTransactionManager",
+        entityManagerFactoryRef = "EntityManagerFactory",
+        transactionManagerRef = "TransactionManager",
         basePackages = {"ru.api.moviepark.data"}
 )
 public class DatabaseConfig {
@@ -33,22 +33,22 @@ public class DatabaseConfig {
     }
 
     @Primary
-    @Bean(name = "psqlDatasource")
+    @Bean(name = "Datasource")
     public DataSource customerDataSource() {
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("psql.datasource.driverClassName"));
-        dataSource.setUrl(env.getProperty("psql.datasource.url"));
-        dataSource.setUsername(env.getProperty("psql.datasource.username"));
-        dataSource.setPassword(env.getProperty("psql.datasource.password"));
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.driverClassName"));
+        dataSource.setUrl(env.getProperty("spring.datasource.url"));
+        dataSource.setUsername(env.getProperty("spring.datasource.username"));
+        dataSource.setPassword(env.getProperty("spring.datasource.password"));
 
         return dataSource;
     }
 
     @Primary
-    @Bean(name = "psqlEntityManagerFactory")
+    @Bean(name = "EntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
-    entityManagerFactory(EntityManagerFactoryBuilder builder, @Qualifier("psqlDatasource") DataSource dataSource) {
+    entityManagerFactory(EntityManagerFactoryBuilder builder, @Qualifier("Datasource") DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
                 .packages("ru.api.moviepark.data")
@@ -56,9 +56,9 @@ public class DatabaseConfig {
     }
 
     @Primary
-    @Bean(name = "psqlTransactionManager")
+    @Bean(name = "TransactionManager")
     public PlatformTransactionManager customerTransactionManager(
-            @Qualifier("psqlEntityManagerFactory") EntityManagerFactory customerEntityManagerFactory) {
+            @Qualifier("EntityManagerFactory") EntityManagerFactory customerEntityManagerFactory) {
         return new JpaTransactionManager(customerEntityManagerFactory);
     }
 }
