@@ -2,6 +2,7 @@ package ru.api.moviepark.data.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 
 import java.time.LocalDate;
@@ -13,6 +14,8 @@ public interface MainScheduleRepo extends JpaRepository<MainScheduleEntity, Inte
     @Query(value = "SELECT max(id) from MainScheduleEntity ")
     Optional<Integer> findMaxId();
 
+    @Query(value = "SELECT seanceDate from MainScheduleEntity e where e.seanceId = :id")
+    LocalDate findDateBySeanceId(@Param("id") int seanceId);
 
     List<MainScheduleEntity> findSeancesEntityBySeanceDateAndHallId(LocalDate date, int hallId);
 }

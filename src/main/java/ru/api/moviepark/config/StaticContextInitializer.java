@@ -5,7 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.api.moviepark.actuator.RpsCalculatorUtil;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
-import ru.api.moviepark.data.repositories.MoviesRepo;
+import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
+import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
 import ru.api.moviepark.util.CheckInputUtil;
 
 import javax.annotation.PostConstruct;
@@ -15,18 +16,15 @@ public class StaticContextInitializer {
 
     private MovieParkEnvironment environment;
     private MainScheduleRepo mainScheduleRepo;
-    private MoviesRepo moviesRepo;
     private HallsRepo hallsRepo;
     private ApplicationContext context;
 
     public StaticContextInitializer(MovieParkEnvironment environment,
                                     MainScheduleRepo mainScheduleRepo,
-                                    MoviesRepo moviesRepo,
                                     HallsRepo hallsRepo,
                                     ApplicationContext context) {
         this.environment = environment;
         this.mainScheduleRepo = mainScheduleRepo;
-        this.moviesRepo = moviesRepo;
         this.hallsRepo = hallsRepo;
         this.context = context;
     }
@@ -34,12 +32,17 @@ public class StaticContextInitializer {
     @PostConstruct
     public void init() {
         CheckInputUtil.setMainScheduleRepo(mainScheduleRepo);
-        CheckInputUtil.setMoviesRepo(moviesRepo);
         CheckInputUtil.setHallsRepo(hallsRepo);
     }
 
     @PostConstruct
     public void initRpsCalculator() {
         RpsCalculatorUtil.startRpsTimeoutFlushProcess(environment);
+    }
+
+    @PostConstruct
+    public void initSeancePlacesInfoTtlCache() {
+        SeanceInfoTtlCache.initSeanceInfoCache(environment);
+        SeancePlacesTtlCache.initSeancePlacesTtlCache(environment);
     }
 }

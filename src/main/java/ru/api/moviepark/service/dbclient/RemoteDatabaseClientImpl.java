@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.dbclient;
+package ru.api.moviepark.service.dbclient;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -6,17 +6,19 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.controller.CommonResponse;
-import ru.api.moviepark.data.cache.SeancesFullInfoTtlCache;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
-import ru.api.moviepark.data.mappers.AllSeancesViewRowMapper;
+import ru.api.moviepark.data.mappers.MainScheduleViewRowMapper;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
-import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
+import ru.api.moviepark.service.cache.MoviesInfoTtlCache;
+import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
+import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,7 +31,6 @@ import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
 import static ru.api.moviepark.config.Constants.dateTimeFormatter;
 import static ru.api.moviepark.controller.CommonResponse.SEANCE_ADDED;
 import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
-import static ru.api.moviepark.data.cache.SeancesFullInfoTtlCacheImpl.CacheValue;
 import static ru.api.moviepark.data.entities.MainScheduleEntity.createMainScheduleEntity;
 import static ru.api.moviepark.util.CheckInputUtil.checkCreateSeanceInput;
 
@@ -42,41 +43,61 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
 
-    private SeancesFullInfoTtlCache fullInfoTtlCache;
-
     public RemoteDatabaseClientImpl(JdbcTemplate jdbcTemplate,
                                     HallsRepo hallsRepo,
                                     MainScheduleRepo mainScheduleRepo,
-                                    SeancesPlacesRepo seancesPlacesRepo,
-                                    SeancesFullInfoTtlCache fullInfoTtlCache) {
+                                    SeancesPlacesRepo seancesPlacesRepo) {
         this.jdbcTemplate = jdbcTemplate;
         this.hallsRepo = hallsRepo;
         this.mainScheduleRepo = mainScheduleRepo;
         this.seancesPlacesRepo = seancesPlacesRepo;
-        this.fullInfoTtlCache = fullInfoTtlCache;
     }
 
+    @Override
     public void changeCacheLifeTime(long cacheLifeTime) {
-        fullInfoTtlCache.setCacheLifeTime(cacheLifeTime);
+        SeancePlacesTtlCache.setCacheLifeTime(cacheLifeTime);
     }
 
-    public AllSeancesView getSeanceById(int seanceId) {
-        String sqlQuery = String.format("select * from %s where seance_id = '%s'", MAIN_SCHEDULE_VIEW_FULL, seanceId);
-        return (AllSeancesView) jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper()).get(0);
+    @Override
+    public MainScheduleViewEntity getSeanceById(int seanceId) {
+        MainScheduleViewEntity result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
+        if (result == null) {
+            getAllSeancesByDate(mainScheduleRepo.findDateBySeanceId(seanceId));
+            result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
+        }
+        return result;
     }
 
-    public List<AllSeancesView> getAllSeancesForDate(LocalDate date) {
+    @Override
+    public List<MainScheduleViewEntity> getAllSeancesByDate(LocalDate date) {
+        if (SeanceInfoTtlCache.checkCacheContainsElementByDate(date)) {
+            return new ArrayList<>(SeanceInfoTtlCache.getSeancesMapByDateFromCache(date).values());
+        }
+
         String sqlQuery = String.format("select * from %s where seance_date = '%s'",
                 MAIN_SCHEDULE_VIEW_FULL, date.format(dateTimeFormatter));
-        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+        List<MainScheduleViewEntity> result = jdbcTemplate.query(sqlQuery, new MainScheduleViewRowMapper());
+        SeanceInfoTtlCache.addSeanceInfoToCache(result);
+        return result;
     }
 
-    public List<AllSeancesView> getAllSeances() {
-        String sqlQuery = String.format("select * from %s;", MAIN_SCHEDULE_VIEW_FULL);
-        return jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
+    @Override
+    public List<MainScheduleViewEntity> getAllSeancesByPeriod(LocalDate periodStart, LocalDate periodEnd) {
+        List<MainScheduleViewEntity> result = new ArrayList<>();
+        while (periodStart.isBefore(periodEnd.plusDays(1))) {
+            result.addAll(getAllSeancesByDate(periodStart));
+            periodStart = periodStart.plusDays(1);
+        }
+
+        return result;
     }
 
+    @Override
     public Map<Integer, String> getAllMoviesByDate(LocalDate date) {
+        if (MoviesInfoTtlCache.containsElement(date)) {
+            return MoviesInfoTtlCache.getElementByDateFromCache(date);
+        }
+
         String sqlQuery = String.format("select distinct(movie_id), movie_name from %s where seance_date = '%s';",
                 MAIN_SCHEDULE_VIEW_FULL, date);
 
@@ -87,39 +108,53 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
             String movieName = sqlRowSet.getString("movie_name");
             result.put(movieId, movieName);
         }
+
+        MoviesInfoTtlCache.addElementToCache(date, result);
         return result;
     }
 
-    public Map<String, List<AllSeancesView>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date) {
-        String sqlQuery = String.format("select * from %s where movie_id = %s and seance_date = '%s';",
-                MAIN_SCHEDULE_VIEW_FULL, movieId, date);
-        List<AllSeancesView> resultFromDb = jdbcTemplate.query(sqlQuery, new AllSeancesViewRowMapper());
-        Map<String, List<AllSeancesView>> result = new HashMap<>();
-        resultFromDb.forEach(currSeance -> {
+    @Override
+    public Map<LocalDate, Map<Integer, String>> getAllMoviesByPeriod(LocalDate periodStart, LocalDate periodEnd) {
+        Map<LocalDate, Map<Integer, String>> result = new HashMap<>();
+        while (periodStart.isBefore(periodEnd.plusDays(1))) {
+            result.put(periodStart, getAllMoviesByDate(periodStart));
+            periodStart = periodStart.plusDays(1);
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, List<MainScheduleViewEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date) {
+        Map<String, List<MainScheduleViewEntity>> result = new HashMap<>();
+
+        getAllSeancesByPeriod(date, date).forEach(currSeance -> {
             String movieParkName = currSeance.getMovieParkName();
-            if (!result.containsKey(movieParkName)) {
-                result.put(movieParkName, new ArrayList<>());
+            if (currSeance.getMovieId() == movieId) {
+                if (result.containsKey(movieParkName)) {
+                    result.get(movieParkName).add(currSeance);
+                } else {
+                    List<MainScheduleViewEntity> currentMovieParkSeanceList = new ArrayList<>();
+                    currentMovieParkSeanceList.add(currSeance);
+                    result.put(movieParkName, currentMovieParkSeanceList);
+                }
             }
-            result.get(movieParkName).add(currSeance);
         });
+
         return result;
     }
 
+    @Override
     public CommonResponse createNewSeance(CreateSeanceInput inputJson) {
         CommonResponse response = checkCreateSeanceInput(inputJson);
         if (!response.equals(VALID_DATA)) {
             return response;
         }
 
-        int newSeanceId = mainScheduleRepo.findMaxId().orElse(0) + 1;
-        MainScheduleEntity newSeanceEntity = createMainScheduleEntity(newSeanceId, inputJson);
+        MainScheduleEntity newSeanceEntity = createMainScheduleEntity(inputJson);
         mainScheduleRepo.save(newSeanceEntity);
         return SEANCE_ADDED;
     }
 
-    /**
-     * Update seances for next days.
-     */
     @Transactional
     public void updateScheduleTable(int days) {
         try {
@@ -130,46 +165,27 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
         }
     }
 
-    /**
-     * Get info about all places in hall.
-     */
     public List<HallsEntity> getHallPlacesInfo(int hallId) {
         return hallsRepo.findAllByHallId(hallId).orElse(null);
     }
 
-    /**
-     * Get info about all places for current seance.
-     */
     public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
         log.info("Getting full info for seance id = " + seanceId);
-        try {
-            if (fullInfoTtlCache.checkCacheContainsElement(seanceId)) {
-                return ((CacheValue) fullInfoTtlCache.getElementFromCache(seanceId)).getSeanceFullInfo();
-            } else {
-                List<SeancePlacesEntity> seanceFullInfo = seancesPlacesRepo.findAllBySeanceId(seanceId);
-                fullInfoTtlCache.addSeanceInfoToCache(seanceId, seanceFullInfo);
-                return seanceFullInfo;
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw e;
+        if (SeancePlacesTtlCache.checkCacheContainsElement(seanceId)) {
+            return SeancePlacesTtlCache.getSeancePlacesInfoByIdFromCache(seanceId);
+        } else {
+            List<SeancePlacesEntity> seanceFullInfo = seancesPlacesRepo.findAllBySeanceId(seanceId);
+            SeancePlacesTtlCache.addSeancePlacesInfoToCache(seanceId, seanceFullInfo);
+            return seanceFullInfo;
         }
     }
 
-    /**
-     * Block/unblock the place in hall for current seance.
-     */
     @Transactional
     public void blockOrUnblockPlaceOnSeance(BlockUnblockPlaceInput inputJson) {
         log.info("Updating places {} in seance {}. Set value: {}",
                 inputJson.getPlaceIdList(), inputJson.getSeanceId(), inputJson.getBlocked());
-        try {
-            int seanceId = inputJson.getSeanceId();
-            seancesPlacesRepo.blockOrUnblockThePlace(seanceId, inputJson.getPlaceIdList(), inputJson.getBlocked());
-            fullInfoTtlCache.removeElementFromCache(seanceId);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw e;
-        }
+        int seanceId = inputJson.getSeanceId();
+        seancesPlacesRepo.blockOrUnblockThePlace(seanceId, inputJson.getPlaceIdList(), inputJson.getBlocked());
+        SeancePlacesTtlCache.removeElementFromCache(seanceId);
     }
 }
