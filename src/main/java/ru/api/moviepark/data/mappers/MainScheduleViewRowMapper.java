@@ -1,19 +1,19 @@
 package ru.api.moviepark.data.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
-import ru.api.moviepark.data.valueobjects.AllSeancesView;
+import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AllSeancesViewRowMapper implements RowMapper {
+public class MainScheduleViewRowMapper implements RowMapper {
     @Override
     public Object mapRow(ResultSet rs, int row) throws SQLException {
-        return AllSeancesView.builder()
+        return MainScheduleViewEntity.builder()
                 .seanceId(rs.getInt("seance_id"))
-                .seanceDate(rs.getDate("seance_date"))
-                .startTime(rs.getTime("start_time"))
-                .endTime(rs.getTime("end_time"))
+                .seanceDate(rs.getDate("seance_date").toLocalDate())
+                .startTime(rs.getTime("start_time").toLocalTime())
+                .endTime(rs.getTime("end_time").toLocalTime())
                 .movieParkId(rs.getInt("movie_park_id"))
                 .movieParkName(rs.getString("movie_park_name"))
                 .movieId(rs.getInt("movie_id"))

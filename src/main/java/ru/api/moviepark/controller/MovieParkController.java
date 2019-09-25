@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import ru.api.moviepark.data.dbclient.DatabaseClient;
-import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
-import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
+import ru.api.moviepark.service.dbclient.DatabaseClient;
+import ru.api.moviepark.service.dbclient.RemoteDatabaseClientImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,7 +41,7 @@ public class MovieParkController {
 
     @GetMapping("/get-seance-info/{seanceId}")
     @ResponseBody
-    public AllSeancesView getAllSeancesByDate(@PathVariable int seanceId) {
+    public MainScheduleViewEntity getSeanceById(@PathVariable int seanceId) {
         try {
             return databaseClient.getSeanceById(seanceId);
         } catch (Exception e) {
@@ -50,34 +50,27 @@ public class MovieParkController {
         }
     }
 
-    @GetMapping("/get-seances-for-date/{dateStr}")
+    @GetMapping("/get-all-seances-by-period/{periodStart}/{periodEnd}")
     @ResponseBody
-    public List<AllSeancesView> getAllSeancesByDate(@PathVariable String dateStr) {
-        try {
-            LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
-            return databaseClient.getAllSeancesForDate(localDate);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw e;
-        }
+    public List<MainScheduleViewEntity> getAllSeancesForPeriod(@PathVariable String periodStart,
+                                                               @PathVariable String periodEnd) {
+        LocalDate periodStartDate = LocalDate.parse(periodStart, dateTimeFormatter);
+        LocalDate periodEndDate = LocalDate.parse(periodEnd, dateTimeFormatter);
+        return databaseClient.getAllSeancesByPeriod(periodStartDate, periodEndDate);
     }
 
-    @GetMapping("/get-all-seances")
+    @GetMapping("/get-all-movies-by-period/{periodStart}/{periodEnd}")
     @ResponseBody
-    public List<AllSeancesView> getAllSeances() {
-        return databaseClient.getAllSeances();
-    }
-
-    @GetMapping("/get-all-movies-by-date/{dateStr}")
-    @ResponseBody
-    public Map<Integer, String> getAllMoviesByDate(@PathVariable String dateStr) {
-        LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
-        return databaseClient.getAllMoviesByDate(localDate);
+    public Map<LocalDate, Map<Integer, String>> getAllMoviesByPeriod(@PathVariable String periodStart,
+                                                                     @PathVariable String periodEnd) {
+        LocalDate periodStartDate = LocalDate.parse(periodStart, dateTimeFormatter);
+        LocalDate periodEndDate = LocalDate.parse(periodEnd, dateTimeFormatter);
+        return databaseClient.getAllMoviesByPeriod(periodStartDate, periodEndDate);
     }
 
     @GetMapping("/get-seances-by-movie-and-date/{movieId}/{dateStr}")
     @ResponseBody
-    public Map<String, List<AllSeancesView>> getAllSeancesByMovieAndDateGroupByMoviePark(
+    public Map<String, List<MainScheduleViewEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(
             @PathVariable int movieId, @PathVariable String dateStr) {
         LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
         return databaseClient.getAllSeancesByMovieAndDateGroupByMoviePark(movieId, localDate);
@@ -126,7 +119,6 @@ public class MovieParkController {
             throw e;
         }
     }
-
 
     @GetMapping("/get-seance-places-info/{seanceId}")
     @ResponseBody
