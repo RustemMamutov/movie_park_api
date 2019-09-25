@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.api.moviepark.actuator.RpsCalculatorUtil;
-import ru.api.moviepark.data.dbclient.DatabaseClient;
-import ru.api.moviepark.data.dbclient.RemoteDatabaseClientImpl;
+import ru.api.moviepark.service.dbclient.DatabaseClient;
+import ru.api.moviepark.service.dbclient.RemoteDatabaseClientImpl;
 
 import static ru.api.moviepark.controller.CommonResponse.ERROR;
 import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
