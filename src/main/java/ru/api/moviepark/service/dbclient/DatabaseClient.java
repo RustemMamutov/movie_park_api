@@ -1,11 +1,11 @@
-package ru.api.moviepark.data.dbclient;
+package ru.api.moviepark.service.dbclient;
 
 import ru.api.moviepark.controller.CommonResponse;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
-import ru.api.moviepark.data.valueobjects.AllSeancesView;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,15 +15,17 @@ public interface DatabaseClient {
 
     void changeCacheLifeTime(long cacheLifeTime);
 
-    AllSeancesView getSeanceById(int seanceId);
+    MainScheduleViewEntity getSeanceById(int seanceId);
 
-    List<AllSeancesView> getAllSeancesForDate(LocalDate date);
-
-    List<AllSeancesView> getAllSeances();
+    List<MainScheduleViewEntity> getAllSeancesByPeriod(LocalDate periodStart, LocalDate periodEnd);
 
     Map<Integer, String> getAllMoviesByDate(LocalDate date);
 
-    Map<String, List<AllSeancesView>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date);
+    List<MainScheduleViewEntity> getAllSeancesByDate(LocalDate date);
+
+    Map<LocalDate, Map<Integer, String>> getAllMoviesByPeriod(LocalDate periodStart, LocalDate periodEnd);
+
+    Map<String, List<MainScheduleViewEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date);
 
     CommonResponse createNewSeance(CreateSeanceInput inputJson);
 

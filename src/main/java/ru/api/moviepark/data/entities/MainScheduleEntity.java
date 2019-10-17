@@ -8,6 +8,8 @@ import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.LocalDate;
@@ -24,7 +26,8 @@ import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
 @Table(name = MAIN_SCHEDULE_TABLE_NAME, schema = SCHEMA_NAME)
 public class MainScheduleEntity {
     @Id
-    @Column(name = "seance_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "seance_id", nullable = false)
     Integer seanceId;
 
     @Column(name = "seance_date")
@@ -51,10 +54,9 @@ public class MainScheduleEntity {
     @Column(name = "vip_price")
     Integer vipPrice;
 
-    public static MainScheduleEntity createMainScheduleEntity(Integer seanceId, CreateSeanceInput inputJson) {
+    public static MainScheduleEntity createMainScheduleEntity(CreateSeanceInput inputJson) {
         return MainScheduleEntity
                 .builder()
-                .seanceId(seanceId)
                 .seanceDate(inputJson.getDate())
                 .startTime(inputJson.getStartTime())
                 .endTime(inputJson.getEndTime())

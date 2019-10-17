@@ -2,27 +2,27 @@ DROP ALL OBJECTS;
 
 create schema if not exists movie_park_develop;
 
-create table movie_park_develop.halls (
+create table if not exists movie_park_develop.halls (
     hall_id int4 NOT NULL,
     place_id int4 NOT NULL,
     is_vip bool NOT NULL,
     PRIMARY KEY (hall_id, place_id)
 );
 
-create table movie_park_develop.movies (
+create table if not exists movie_park_develop.movies (
     id int4 NOT NULL,
     name VARCHAR NOT NULL,
     PRIMARY KEY (id)
 );
 
-create table movie_park_develop.movie_parks (
+create table if not exists movie_park_develop.movie_parks (
     id int4 NOT NULL,
     name text NOT NULL,
     PRIMARY KEY (id)
 );
 
-create table movie_park_develop.main_schedule (
-    seance_id int4 NOT NULL,
+create table if not exists movie_park_develop.main_schedule (
+    seance_id int4 auto_increment NOT NULL,
     seance_date date NOT NULL,
     start_time time NOT NULL,
     end_time time NOT NULL,
@@ -36,7 +36,7 @@ create table movie_park_develop.main_schedule (
     FOREIGN KEY (movie_id) REFERENCES movie_park_develop.movies(id)
 );
 
-create table movie_park_develop.seances_places (
+create table if not exists movie_park_develop.seances_places (
     seance_id int4 NOT NULL,
     place_id int4 NOT NULL,
     blocked bool NOT NULL,

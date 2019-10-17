@@ -3,49 +3,51 @@ package ru.api.moviepark.data.valueobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
-import java.sql.Date;
-import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Builder
-public class AllSeancesView {
+@EqualsAndHashCode
+public class MainScheduleViewEntity {
 
     @Column(name = "seance_id")
-    Integer seanceId;
+    private Integer seanceId;
 
     @Column(name = "seance_date")
-    Date seanceDate;
+    private LocalDate seanceDate;
 
     @Column(name = "start_time")
-    Time startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time")
-    Time endTime;
+    private LocalTime endTime;
 
     @Column(name = "movie_park_id")
-    Integer movieParkId;
+    private Integer movieParkId;
 
     @Column(name = "movie_park_name")
-    String movieParkName;
+    private String movieParkName;
 
     @Column(name = "movie_id")
-    Integer movieId;
+    private Integer movieId;
 
     @Column(name = "movie_name")
-    String movieName;
+    private String movieName;
 
     @Column(name = "hall_id")
-    Integer hallId;
+    private Integer hallId;
 
     @Column(name = "base_price")
-    Integer basePrice;
+    private Integer basePrice;
 
     @Column(name = "vip_price")
-    Integer vipPrice;
+    private Integer vipPrice;
 }
