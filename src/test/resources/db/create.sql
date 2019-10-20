@@ -31,7 +31,9 @@ create table if not exists movie_park_develop.main_schedule (
     hall_id int4 NOT NULL,
     base_price int4 NOT NULL,
     vip_price int4 NOT NULL,
-    PRIMARY KEY (seance_id)
+    PRIMARY KEY (seance_id),
+    FOREIGN KEY (movie_park_id) REFERENCES movie_park_develop.movie_parks(id),
+    FOREIGN KEY (movie_id) REFERENCES movie_park_develop.movies(id)
 );
 
 create table if not exists movie_park_develop.seances_places (
