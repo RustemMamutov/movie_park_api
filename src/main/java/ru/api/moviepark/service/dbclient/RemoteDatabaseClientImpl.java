@@ -21,6 +21,7 @@ import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
 import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -127,15 +128,20 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     public Map<String, List<MainScheduleViewEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date) {
         Map<String, List<MainScheduleViewEntity>> result = new HashMap<>();
 
-        getAllSeancesByPeriod(date, date).forEach(currSeance -> {
-            String movieParkName = currSeance.getMovieParkName();
-            if (currSeance.getMovieId() == movieId) {
-                if (result.containsKey(movieParkName)) {
-                    result.get(movieParkName).add(currSeance);
-                } else {
-                    List<MainScheduleViewEntity> currentMovieParkSeanceList = new ArrayList<>();
-                    currentMovieParkSeanceList.add(currSeance);
-                    result.put(movieParkName, currentMovieParkSeanceList);
+        getAllSeancesByPeriod(date, date.plusDays(1)).forEach(currSeance -> {
+            if (
+            (currSeance.getSeanceDate().equals(date) && currSeance.getStartTime().isAfter(LocalTime.of(6,0))) ||
+                    (currSeance.getSeanceDate().equals(date.plusDays(1)) && currSeance.getStartTime().isBefore(LocalTime.of(6,0)))
+            ) {
+                String movieParkName = currSeance.getMovieParkName();
+                if (currSeance.getMovieId() == movieId) {
+                    if (result.containsKey(movieParkName)) {
+                        result.get(movieParkName).add(currSeance);
+                    } else {
+                        List<MainScheduleViewEntity> currentMovieParkSeanceList = new ArrayList<>();
+                        currentMovieParkSeanceList.add(currSeance);
+                        result.put(movieParkName, currentMovieParkSeanceList);
+                    }
                 }
             }
         });
