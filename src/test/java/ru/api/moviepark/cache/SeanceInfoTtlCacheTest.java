@@ -4,12 +4,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
 import ru.api.moviepark.service.dbclient.RemoteDatabaseClientImpl;
@@ -23,10 +21,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootConfiguration
 @EnableJpaRepositories
 @ComponentScan("ru.api.moviepark")
-@PropertySource("/application-test.properties")
+@PropertySource("/application-test.yaml")
 public class SeanceInfoTtlCacheTest {
 
     @Autowired

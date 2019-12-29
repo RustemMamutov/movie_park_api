@@ -3,7 +3,6 @@ package ru.api.moviepark.cache;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -20,10 +19,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootConfiguration
 @EnableJpaRepositories
 @ComponentScan("ru.api.moviepark")
-@PropertySource("/application-test.properties")
+@PropertySource("/application-test.yaml")
 public class MoviesInfoTtlCacheTest {
 
     @Autowired

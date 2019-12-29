@@ -3,7 +3,6 @@ package ru.api.moviepark.util;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -17,10 +16,9 @@ import java.time.LocalTime;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
-@SpringBootConfiguration
 @EnableJpaRepositories
 @ComponentScan("ru.api.moviepark")
-@PropertySource("/application-test.properties")
+@PropertySource("/application-test.yaml")
 public class CommandCheckerUtilTest {
 
     private CreateSeanceInput seanceInput;
