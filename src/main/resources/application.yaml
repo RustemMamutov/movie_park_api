@@ -1,9 +1,10 @@
 spring:
   datasource:
+    # localhost database in docker container
     url: jdbc:postgresql://localhost:5432/trade_center
-    driver-class-name: org.postgresql.Driver
-    username: login
+    username: postgres
     password: password
+    driverClassName: org.postgresql.Driver
   jpa:
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
     show-sql: true

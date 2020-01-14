@@ -77,6 +77,7 @@ public class CommandCheckerUtilTest {
 
     @Test
     public void Should_Return_Valid_When_CorrectInput() {
+        seanceInput.setDate(testDate.plusDays(4));
         assertEquals(CommonResponse.VALID_DATA, CheckInputUtil.checkCreateSeanceInput(seanceInput));
     }
 
