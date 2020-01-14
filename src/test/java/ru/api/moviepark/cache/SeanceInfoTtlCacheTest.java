@@ -12,7 +12,6 @@ import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
 import ru.api.moviepark.service.dbclient.RemoteDatabaseClientImpl;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -38,13 +37,13 @@ public class SeanceInfoTtlCacheTest {
 
 
     @Test
-    public void Should_GetSeanceById_When_ItIsGiven() throws IOException {
+    public void Should_GetSeanceById_When_ItIsGiven() {
         assertFalse(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
         remoteDatabaseClient.getSeanceById(1);
         assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
 
         List<MainScheduleViewEntity> result = SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate);
-        assertEquals(24, result.size());
+        assertEquals(21, result.size());
     }
 
     @Test
@@ -54,7 +53,7 @@ public class SeanceInfoTtlCacheTest {
         assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
 
         List<MainScheduleViewEntity> result = SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate);
-        assertEquals(24, result.size());
+        assertEquals(21, result.size());
     }
 
     @Test
@@ -67,7 +66,7 @@ public class SeanceInfoTtlCacheTest {
         assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
         assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate.plusDays(1)));
 
-        assertEquals(24, SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate).size());
-        assertEquals(23, SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate.plusDays(1)).size());
+        assertEquals(21, SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate).size());
+        assertEquals(22, SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate.plusDays(1)).size());
     }
 }
