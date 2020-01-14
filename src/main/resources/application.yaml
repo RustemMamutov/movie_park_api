@@ -22,7 +22,7 @@ rps.life.time: 120
 management:
   endpoints:
     web.base-path: /movie_park_service
-    #web.exposure.include: *
+    # web.exposure.include: *
     # HEALTH ENDPOINT
     health.show-details: always
   health.diskSpace.enabled: false

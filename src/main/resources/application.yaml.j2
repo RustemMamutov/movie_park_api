@@ -2,10 +2,11 @@
 
 spring:
   datasource:
+    # localhost database in docker container
     url: {{ datasource_url }}
-    driverClassName: {{ datasource_driverClassName }}
     username: {{ datasource_username }}
     password: {{ datasource_password }}
+    driverClassName: {{ datasource_driverClassName }}
   jpa:
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
     show-sql: true
@@ -23,6 +24,7 @@ rps.life.time: {{ rps_life_time }}
 management:
   endpoints:
     web.base-path: /movie_park_service
+    # web.exposure.include: *
     # HEALTH ENDPOINT
     health.show-details: always
   health.diskSpace.enabled: false

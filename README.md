@@ -1,3 +1,16 @@
+## Docker
+#Docker container with microservice (need to authorize)
+
+docker pull mamutovrm1/mp_api_img:latest
+
+docker run --name mp_api_doc -p 9000:9000 mamutovrm1/mp_api_img:latest &
+
+#Start localhost docker container with postgresl DB for testing
+
+docker pull mamutovrm1/mp_api_testdb_img:latest
+
+docker run --name psql_doc --env PGDATA=/opt/psql_data -p 5432:5432 -i mamutovrm1/mp_api_testdb_img:latest &
+
 ## Api для работы с кинотеатрами  
   
 сервис работает с БД trade_center, schema - movie_park.  
