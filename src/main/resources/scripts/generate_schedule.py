@@ -6,11 +6,8 @@ from datetime import timedelta as td
 from datetime import time
 import random
 
-START_DATE = dt.strptime('2019-11-03', "%Y-%m-%d")
-PERIOD_TO_CALCULATE_IN_DAYS = 365
 
-movie_park_info = namedtuple("movie_park_info", "name halls_list")
-hall_info = namedtuple("hall_info", "seance_timeout start_time end_time_delta prices_policy")
+hall_info = namedtuple("hall_info", "seance_timeout start_time end_time_delta prices_policy hall_places")
 movie_info = namedtuple("movie_info", "id movie_name movie_time start_date end_date")
 
 seance_info = namedtuple("seance_info",
@@ -25,33 +22,53 @@ seance_info = namedtuple("seance_info",
                          "vip_price")
 
 movie_parks = {
-    1: movie_park_info("Cinema Park Mitino", [101]),
-    2: movie_park_info("Mega Khimki", [201]),
-    3: movie_park_info("Vegas Krokus City", [301]),
+    1: "CinemaPark1",
+    2: "CinemaPark2",
+    3: "CinemaPark3",
 }
 
 movie_park_halls = {
-    101: hall_info(td(minutes=20), td(hours=8), td(hours=18), {
-        time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [100, 200], time(0, 0): [200, 300]}),
-    102: hall_info(td(minutes=30), td(hours=10), td(hours=15), {
-        time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [100, 200], time(0, 0): [200, 300]}),
-    103: hall_info(td(minutes=40), td(hours=9), td(hours=16), {
-        time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [100, 200], time(0, 0): [200, 300]}),
-    201: hall_info(td(minutes=30), td(hours=8), td(hours=17), {
-        time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [150, 250], time(0, 0): [200, 300]}),
-    202: hall_info(td(minutes=40), td(hours=9), td(hours=16), {
-        time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [150, 250], time(0, 0): [200, 300]}),
-    203: hall_info(td(minutes=40), td(hours=10), td(hours=15), {
-        time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [150, 250], time(0, 0): [200, 300]})
+    101: hall_info(td(minutes=20), td(hours=8), td(hours=18),
+                   {time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [100, 200], time(0, 0): [200, 300]},
+                   {1: 10, 2: 10, 3: 10}),
+    102: hall_info(td(minutes=30), td(hours=10), td(hours=15),
+                   {time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [100, 200], time(0, 0): [200, 300]},
+                   {1: 10, 2: 10, 3: 10}),
+    103: hall_info(td(minutes=40), td(hours=9), td(hours=16),
+                   {time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [100, 200], time(0, 0): [200, 300]},
+                   {1: 10, 2: 10, 3: 10}),
+    201: hall_info(td(minutes=30), td(hours=8), td(hours=17),
+                   {time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [150, 250], time(0, 0): [200, 300]},
+                   {1: 10, 2: 10, 3: 10}),
+    202: hall_info(td(minutes=40), td(hours=9), td(hours=16),
+                   {time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [150, 250], time(0, 0): [200, 300]},
+                   {1: 10, 2: 10, 3: 10}),
+    203: hall_info(td(minutes=40), td(hours=10), td(hours=15),
+                   {time(18, 0): [200, 300], time(12, 0): [150, 250], time(6, 0): [150, 250], time(0, 0): [200, 300]},
+                   {1: 10, 2: 10, 3: 10})
 }
 
 movies = [
-    movie_info(1, "Рэмбо 5", td(hours=1, minutes=50), dt(2019, 10, 1), dt(2019, 10, 31)),
-    movie_info(2, "Джокер", td(hours=1, minutes=50), dt(2019, 10, 20), dt(2019, 11, 20)),
-    movie_info(3, "Гемини", td(hours=1, minutes=50), dt(2019, 11, 1), dt(2019, 11, 30)),
-    movie_info(4, "Мелифисента", td(hours=1, minutes=50), dt(2019, 10, 15), dt(2019, 11, 15)),
-    movie_info(5, "Терминатор. Темные судьбы", td(hours=1, minutes=50), dt(2019, 10, 30), dt(2019, 11, 30)),
-    movie_info(6, "Джуманджи. Новый уровень", td(hours=1, minutes=50), dt(2019, 12, 15), dt(2020, 1, 15))
+    movie_info(1, "Фильм1", td(hours=1, minutes=50), dt(2019, 10, 1), dt(2019, 10, 31)),
+    movie_info(2, "Фильм2", td(hours=1, minutes=50), dt(2019, 10, 20), dt(2019, 11, 20)),
+    movie_info(3, "Фильм3", td(hours=1, minutes=50), dt(2019, 11, 1), dt(2019, 11, 30)),
+    movie_info(4, "Фильм4", td(hours=1, minutes=50), dt(2019, 10, 15), dt(2019, 11, 15)),
+    movie_info(5, "Фильм5", td(hours=1, minutes=50), dt(2019, 10, 30), dt(2019, 11, 30)),
+    movie_info(6, "Фильм6", td(hours=1, minutes=50), dt(2019, 12, 15), dt(2020, 1, 15)),
+    movie_info(7, "Фильм7", td(hours=1, minutes=10), dt(2020, 1, 1), dt(2020, 2, 1)),
+    movie_info(8, "Фильм8", td(hours=1, minutes=20), dt(2020, 1, 15), dt(2020, 2, 15)),
+    movie_info(9, "Фильм9", td(hours=1, minutes=30), dt(2020, 2, 1), dt(2020, 3, 1)),
+    movie_info(10, "Фильм10", td(hours=1, minutes=40), dt(2020, 2, 15), dt(2020, 3, 15)),
+    movie_info(11, "Фильм11", td(hours=1, minutes=50), dt(2020, 3, 1), dt(2020, 4, 1)),
+    movie_info(12, "Фильм12", td(hours=2, minutes=0), dt(2020, 3, 15), dt(2020, 4, 15)),
+    movie_info(13, "Фильм13", td(hours=2, minutes=10), dt(2020, 4, 1), dt(2020, 5, 1)),
+    movie_info(14, "Фильм14", td(hours=1, minutes=20), dt(2020, 4, 15), dt(2020, 5, 15)),
+    movie_info(15, "Фильм15", td(hours=1, minutes=30), dt(2020, 5, 1), dt(2020, 6, 1)),
+    movie_info(16, "Фильм16", td(hours=1, minutes=40), dt(2020, 5, 15), dt(2020, 6, 15)),
+    movie_info(17, "Фильм17", td(hours=1, minutes=50), dt(2020, 6, 1), dt(2020, 7, 1)),
+    movie_info(18, "Фильм18", td(hours=1, minutes=40), dt(2020, 6, 15), dt(2020, 7, 15)),
+    movie_info(19, "Фильм19", td(hours=1, minutes=30), dt(2020, 7, 1), dt(2020, 8, 1)),
+    movie_info(20, "Фильм20", td(hours=1, minutes=45), dt(2020, 7, 15), dt(2020, 8, 15))
 ]
 
 
@@ -117,20 +134,73 @@ def generate_schedule(period_start_date, days):
     return result_list
 
 
-def main():
-    filename = "schedule.csv"
+def generate_main_schedule_file(start_date, period_to_calculate_in_days):
+    filename = "main_schedule.csv"
     try:
         os.remove(filename)
     except OSError:
         pass
 
-    result = generate_schedule(START_DATE, PERIOD_TO_CALCULATE_IN_DAYS)
+    result = generate_schedule(start_date, period_to_calculate_in_days)
 
-    with open(filename, 'a') as file:
-        file.write("seance_id,\"seance_date\",\"start_time\",\"end_time\",\"movie_park_id\",\"movie_id\",\"hall_id\",\"base_price\",\"vip_price\"\n")
+    with open(filename, 'a', encoding="utf-8") as file:
+        file.write("seance_id,\"seance_date\",\"start_time\",\"end_time\","
+                   "\"movie_park_id\",\"movie_id\",\"hall_id\",\"base_price\",\"vip_price\"\n")
         for each_seance_info in result:
             file.write(seance_info_to_string(each_seance_info))
             file.write('\n')
 
 
-main()
+def generate_movies_file():
+    filename = "movies.csv"
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
+    with open(filename, 'a', encoding="utf-8") as file:
+        file.write("id,\"name\"\n")
+        for each_movie_name in movies:
+            file.write(f'{each_movie_name.id},{each_movie_name.movie_name}')
+            file.write('\n')
+
+
+def generate_movie_parks_file():
+    filename = "movie_parks.csv"
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
+    with open(filename, 'a', encoding="utf-8") as file:
+        file.write("id,\"name\"\n")
+        for id in movie_parks:
+            file.write(f'{id},{movie_parks[id]}')
+            file.write('\n')
+
+
+def generate_halls_file():
+    filename = "halls.csv"
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
+    with open(filename, 'a', encoding="utf-8") as file:
+        file.write("hall_id,\"place_id\",\"is_vip\"\n")
+        for hall_id in movie_park_halls:
+            hall_places = movie_park_halls[hall_id].hall_places
+            for each_row in hall_places:
+                for place in range(1, hall_places[each_row] + 1):
+                    file.write(f'{hall_id},{100 * each_row + place},false')
+                    file.write('\n')
+
+
+def main(start_date_as_str, period_to_calculate_in_days):
+    generate_main_schedule_file(dt.strptime(start_date_as_str, "%Y-%m-%d"), period_to_calculate_in_days)
+    generate_movies_file()
+    generate_movie_parks_file()
+    generate_halls_file()
+
+
+main('2019-11-03', 365)
