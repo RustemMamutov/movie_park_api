@@ -10,12 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.api.moviepark.data.entities.HallsEntity;
+import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
-import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 import ru.api.moviepark.service.dbclient.DatabaseClient;
-import ru.api.moviepark.service.dbclient.RemoteDatabaseClientImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,13 +34,13 @@ public class MovieParkController {
 
     private DatabaseClient databaseClient;
 
-    public MovieParkController(RemoteDatabaseClientImpl databaseClient) {
+    public MovieParkController(DatabaseClient databaseClient) {
         this.databaseClient = databaseClient;
     }
 
     @GetMapping("/get-seance-info/{seanceId}")
     @ResponseBody
-    public MainScheduleViewEntity getSeanceById(@PathVariable int seanceId) {
+    public MainScheduleEntity getSeanceById(@PathVariable int seanceId) {
         try {
             return databaseClient.getSeanceById(seanceId);
         } catch (Exception e) {
@@ -52,7 +51,7 @@ public class MovieParkController {
 
     @GetMapping("/get-all-seances-by-period/{periodStart}/{periodEnd}")
     @ResponseBody
-    public List<MainScheduleViewEntity> getAllSeancesForPeriod(@PathVariable String periodStart,
+    public List<MainScheduleEntity> getAllSeancesForPeriod(@PathVariable String periodStart,
                                                                @PathVariable String periodEnd) {
         LocalDate periodStartDate = LocalDate.parse(periodStart, dateTimeFormatter);
         LocalDate periodEndDate = LocalDate.parse(periodEnd, dateTimeFormatter);
@@ -70,7 +69,7 @@ public class MovieParkController {
 
     @GetMapping("/get-seances-by-movie-and-date/{movieId}/{dateStr}")
     @ResponseBody
-    public Map<String, List<MainScheduleViewEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(
+    public Map<String, List<MainScheduleEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(
             @PathVariable int movieId, @PathVariable String dateStr) {
         LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
         return databaseClient.getAllSeancesByMovieAndDateGroupByMoviePark(movieId, localDate);
