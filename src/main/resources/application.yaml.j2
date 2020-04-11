@@ -1,24 +1,28 @@
 ###################### RENDERED FROM JINJA TEMPLATE ######################
 
+spring.profiles.active: prod
 spring:
   datasource:
-    # localhost database in docker container
-    url: {{ datasource_url }}
-    username: {{ datasource_username }}
-    password: {{ datasource_password }}
-    driverClassName: {{ datasource_driverClassName }}
-  jpa:
-    properties.hibernate.temp.use_jdbc_metadata_defaults: false
-    show-sql: true
-    hibernate.ddl-auto: validate
+      prod:
+        # real database
+        url: {{ datasource_url }}
+        username: {{ datasource_username }}
+        password: {{ datasource_password }}
+        driverClassName: {{ datasource_driverClassName }}
 
 server.port: {{ server_port }}
 
-max.cache.life.time: {{ max_cache_life_time }}
-min.cache.life.time: {{ min_cache_life_time }}
-seance.info.cache.flush.timeout: {{ seance_info_cache_flush_timeout }}
-rps.map.flush.timeout: {{ rps_map_flush_timeout }}
-rps.life.time: {{ rps_life_time }}
+cache:
+  tables:
+    lifetime:
+      max: {{ max_cache_life_time }}
+      min: {{ min_cache_life_time }}
+    timeouts:
+      seance_info_flush: {{ seance_info_cache_flush_timeout }}
+  rps:
+    lifetime: {{ rps_life_time }}
+    timeouts:
+      cron_timeout: {{ rps_map_flush_timeout }}
 
 # actuator
 management:

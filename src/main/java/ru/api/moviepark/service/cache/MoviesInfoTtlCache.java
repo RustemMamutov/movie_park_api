@@ -1,9 +1,6 @@
 package ru.api.moviepark.service.cache;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import ru.api.moviepark.config.MovieParkEnvironment;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -12,18 +9,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-@Service
+import static java.util.concurrent.TimeUnit.HOURS;
+
+@Slf4j
 public class MoviesInfoTtlCache {
 
-    private static Logger logger = LoggerFactory.getLogger(MoviesInfoTtlCache.class);
-
-    private static long cacheLifeTime = 3600;
     private static final Map<LocalDate, Map<Integer, String>> moviesSortByDateTtlCache = new ConcurrentHashMap<>();
 
-    private static MovieParkEnvironment env;
-
-    public static void initSeanceInfoCache(MovieParkEnvironment env) {
-        MoviesInfoTtlCache.env = env;
+    public static void initMoviesInfoCache() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -32,6 +25,13 @@ public class MoviesInfoTtlCache {
                 return th;
             }
         });
+
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                moviesSortByDateTtlCache.clear();
+            }
+        }, 1, 24, HOURS);
     }
 
     public static Map<Integer, String> getElementByDateFromCache(LocalDate date) {

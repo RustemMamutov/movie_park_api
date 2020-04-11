@@ -1,17 +1,8 @@
 package ru.api.moviepark.config;
 
-import org.springframework.stereotype.Component;
-
 import java.time.format.DateTimeFormatter;
 
-@Component
 public class Constants {
-
-    public static MovieParkEnvironment env;
-
-    public Constants(MovieParkEnvironment environment) {
-        env = environment;
-    }
 
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
