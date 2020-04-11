@@ -3,9 +3,10 @@ package ru.api.moviepark.util;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.api.moviepark.controller.CommonResponse;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
@@ -18,7 +19,8 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringRunner.class)
 @EnableJpaRepositories
 @ComponentScan("ru.api.moviepark")
-@PropertySource("/application-test.yaml")
+@SpringBootTest()
+@ActiveProfiles("dev")
 public class CommandCheckerUtilTest {
 
     private CreateSeanceInput seanceInput;
@@ -29,8 +31,8 @@ public class CommandCheckerUtilTest {
     public void createSeanceInputTemplate() {
         seanceInput = CreateSeanceInput.builder()
                 .date(testDate)
-                .startTime(LocalTime.of(7,30))
-                .endTime(LocalTime.of(8,30))
+                .startTime(LocalTime.of(7, 30))
+                .endTime(LocalTime.of(8, 30))
                 .movieParkId(1)
                 .movieId(1)
                 .hallId(101)
@@ -41,16 +43,16 @@ public class CommandCheckerUtilTest {
 
     @Test
     public void Should_Return_InvalidTimePeriod_When_InvalidPeriodIsGiven() {
-        setTimePeriod(seanceInput, LocalTime.of(8,30), LocalTime.of(9,10));
+        setTimePeriod(seanceInput, LocalTime.of(8, 30), LocalTime.of(9, 10));
         assertEquals(CommonResponse.INVALID_TIME_PERIOD, CheckInputUtil.checkCreateSeanceInput(seanceInput));
 
-        setTimePeriod(seanceInput, LocalTime.of(9,10), LocalTime.of(10,30));
+        setTimePeriod(seanceInput, LocalTime.of(9, 10), LocalTime.of(10, 30));
         assertEquals(CommonResponse.INVALID_TIME_PERIOD, CheckInputUtil.checkCreateSeanceInput(seanceInput));
 
-        setTimePeriod(seanceInput, LocalTime.of(10,30), LocalTime.of(10,50));
+        setTimePeriod(seanceInput, LocalTime.of(10, 30), LocalTime.of(10, 50));
         assertEquals(CommonResponse.INVALID_TIME_PERIOD, CheckInputUtil.checkCreateSeanceInput(seanceInput));
 
-        setTimePeriod(seanceInput, LocalTime.of(8,50), LocalTime.of(10,50));
+        setTimePeriod(seanceInput, LocalTime.of(8, 50), LocalTime.of(10, 50));
         assertEquals(CommonResponse.INVALID_TIME_PERIOD, CheckInputUtil.checkCreateSeanceInput(seanceInput));
     }
 

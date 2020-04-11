@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.api.moviepark.actuator.RpsCalculatorUtil;
-import ru.api.moviepark.service.dbclient.DatabaseClient;
-import ru.api.moviepark.service.dbclient.RemoteDatabaseClientImpl;
+import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
 
 import static ru.api.moviepark.controller.CommonResponse.ERROR;
 import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
@@ -19,17 +18,11 @@ import static ru.api.moviepark.controller.CommonResponse.VALID_DATA;
 @RequestMapping("/movie-park-service")
 public class MovieParkServiceController {
 
-    private DatabaseClient databaseClient;
-
-    public MovieParkServiceController(RemoteDatabaseClientImpl databaseClient) {
-        this.databaseClient = databaseClient;
-    }
-
     @GetMapping("/change-cache-ttl/{ttl}")
     @ResponseBody
     public CommonResponse changeCacheTtl(@PathVariable String ttl) {
         try {
-            databaseClient.changeCacheLifeTime(Integer.parseInt(ttl));
+            SeancePlacesTtlCache.setCacheLifeTime(Integer.parseInt(ttl));
             return VALID_DATA;
         } catch (Exception e) {
             log.error(e.getMessage());

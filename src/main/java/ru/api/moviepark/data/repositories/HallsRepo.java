@@ -11,10 +11,8 @@ import java.util.Optional;
 
 public interface HallsRepo extends JpaRepository<HallsEntity, HallsEntityId> {
 
-    @Query(value = "SELECT CASE WHEN count(e.hallId)> 0 then true else false end " +
-            "from HallsEntity e where e.hallId = :id")
+    @Query(value = "SELECT CASE WHEN count(e.hallId)> 0 then true else false end from HallsEntity e where e.hallId = :id")
     Optional<Boolean> checkIdExists(@Param("id") int income_id);
-
 
     Optional<List<HallsEntity>> findAllByHallId(int hallId);
 }

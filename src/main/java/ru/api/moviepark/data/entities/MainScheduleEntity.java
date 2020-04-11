@@ -1,7 +1,9 @@
 package ru.api.moviepark.data.entities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
@@ -12,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -24,6 +27,7 @@ import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
 @Entity
 @Builder
 @Table(name = MAIN_SCHEDULE_TABLE_NAME, schema = SCHEMA_NAME)
+@EqualsAndHashCode
 public class MainScheduleEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,8 +46,18 @@ public class MainScheduleEntity {
     @Column(name = "movie_park_id")
     Integer movieParkId;
 
-    @Column(name = "movie_id")
+    @Column(name = "movie_park_name")
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String movieParkName;
+
+    @Column(name =   "movie_id")
     Integer movieId;
+
+    @Column(name = "movie_name")
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String movieName;
 
     @Column(name = "hall_id")
     Integer hallId;
