@@ -2,9 +2,8 @@ package ru.api.moviepark.actuator;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.api.moviepark.config.MovieParkEnvironment;
+import lombok.extern.slf4j.Slf4j;
+import ru.api.moviepark.config.MovieParkEnv;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -15,16 +14,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+@Slf4j
 public class RpsCalculatorUtil {
 
     private final static Map<Long, Integer> rpsCountMap = new ConcurrentSkipListMap<>();
     private static AtomicInteger currentRps = new AtomicInteger(0);
 
-    private static Logger logger = LoggerFactory.getLogger(RpsCalculatorUtil.class);
+    private static MovieParkEnv env;
 
-    private static MovieParkEnvironment env;
-
-    public static void startRpsTimeoutFlushProcess(MovieParkEnvironment env) {
+    public static void startRpsTimeoutFlushProcess(MovieParkEnv env) {
         RpsCalculatorUtil.env = env;
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
@@ -38,15 +36,15 @@ public class RpsCalculatorUtil {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                logger.debug("Start flushing rps statistics. Rps map size BEFORE flush: {}", rpsCountMap.size());
+                log.debug("Start flushing rps statistics. Rps map size BEFORE flush: {}", rpsCountMap.size());
                 long currentSecond = System.currentTimeMillis() / 1000;
                 for (long timeMoment : rpsCountMap.keySet()) {
                     if (timeMoment < currentSecond - env.getRpsLifeTime()) {
-                        logger.debug("Remove element by second: {}", timeMoment);
+                        log.debug("Remove element by second: {}", timeMoment);
                         rpsCountMap.remove(timeMoment);
                     }
                 }
-                logger.debug("Finish flushing rps statistics. Rps map size AFTER flush: {}", rpsCountMap.size());
+                log.debug("Finish flushing rps statistics. Rps map size AFTER flush: {}", rpsCountMap.size());
             }
         }, 1, env.getRpsMapFlushTimeout(), SECONDS);
     }

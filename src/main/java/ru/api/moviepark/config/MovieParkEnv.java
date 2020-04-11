@@ -5,20 +5,20 @@ import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
-public class MovieParkEnvironment {
-    @Value("${max.cache.life.time}")
+public class MovieParkEnv {
+    @Value("${cache.tables.lifetime.max}")
     private long maxCacheLifeTime;
 
-    @Value("${min.cache.life.time}")
+    @Value("${cache.tables.lifetime.min}")
     private long minCacheLifeTime;
 
-    @Value("${seance.info.cache.flush.timeout}")
+    @Value("${cache.tables.timeouts.seance_info_flush}")
     private int seanceInfoCacheFlushTimeout;
 
-    @Value("${rps.map.flush.timeout}")
+    @Value("${cache.rps.timeouts.cron_timeout}")
     private int rpsMapFlushTimeout;
 
-    @Value("${rps.life.time}")
+    @Value("${cache.rps.lifetime}")
     private int rpsLifeTime;
 
     public long getMaxCacheLifeTime() {

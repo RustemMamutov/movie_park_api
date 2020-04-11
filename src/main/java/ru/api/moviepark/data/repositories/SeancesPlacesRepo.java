@@ -14,8 +14,8 @@ public interface SeancesPlacesRepo extends JpaRepository<SeancePlacesEntity, Sea
     List<SeancePlacesEntity> findAllBySeanceId(int id);
 
     @Modifying
-    @Query("update SeancePlacesEntity entity set entity.blocked = :blocked " +
-            "where entity.seanceId = :seanceId and entity.placeId IN :placeIdList")
+    @Query("update SeancePlacesEntity entity set entity.blocked = :blocked where entity.seanceId = :seanceId " +
+            "and entity.placeId IN :placeIdList")
     void blockOrUnblockThePlace(@Param("seanceId") int seanceId,
                                 @Param("placeIdList") List<Integer> placeIdList,
                                 @Param("blocked") boolean blocked);

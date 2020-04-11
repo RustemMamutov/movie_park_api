@@ -2,6 +2,7 @@ package ru.api.moviepark.service.dbclient;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,13 +10,12 @@ import ru.api.moviepark.controller.CommonResponse;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
-import ru.api.moviepark.data.mappers.MainScheduleViewRowMapper;
+import ru.api.moviepark.data.mappers.MainScheduleRowMapper;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
-import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 import ru.api.moviepark.service.cache.MoviesInfoTtlCache;
 import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
 import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
@@ -37,17 +37,18 @@ import static ru.api.moviepark.util.CheckInputUtil.checkCreateSeanceInput;
 
 @Service
 @Slf4j
-public class RemoteDatabaseClientImpl implements DatabaseClient {
+public class DatabaseClientImpl implements DatabaseClient {
 
     private final JdbcTemplate jdbcTemplate;
     private final HallsRepo hallsRepo;
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
+    private final RowMapper mainScheduleRowMapper = new MainScheduleRowMapper();
 
-    public RemoteDatabaseClientImpl(JdbcTemplate jdbcTemplate,
-                                    HallsRepo hallsRepo,
-                                    MainScheduleRepo mainScheduleRepo,
-                                    SeancesPlacesRepo seancesPlacesRepo) {
+    public DatabaseClientImpl(JdbcTemplate jdbcTemplate,
+                              HallsRepo hallsRepo,
+                              MainScheduleRepo mainScheduleRepo,
+                              SeancesPlacesRepo seancesPlacesRepo) {
         this.jdbcTemplate = jdbcTemplate;
         this.hallsRepo = hallsRepo;
         this.mainScheduleRepo = mainScheduleRepo;
@@ -55,13 +56,8 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     }
 
     @Override
-    public void changeCacheLifeTime(long cacheLifeTime) {
-        SeancePlacesTtlCache.setCacheLifeTime(cacheLifeTime);
-    }
-
-    @Override
-    public MainScheduleViewEntity getSeanceById(int seanceId) {
-        MainScheduleViewEntity result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
+    public MainScheduleEntity getSeanceById(int seanceId) {
+        MainScheduleEntity result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
         if (result == null) {
             getAllSeancesByDate(mainScheduleRepo.findDateBySeanceId(seanceId));
             result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
@@ -70,21 +66,21 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     }
 
     @Override
-    public List<MainScheduleViewEntity> getAllSeancesByDate(LocalDate date) {
+    public List<MainScheduleEntity> getAllSeancesByDate(LocalDate date) {
         if (SeanceInfoTtlCache.checkCacheContainsElementByDate(date)) {
             return new ArrayList<>(SeanceInfoTtlCache.getSeancesMapByDateFromCache(date).values());
         }
 
         String sqlQuery = String.format("select * from %s where seance_date = '%s'",
                 MAIN_SCHEDULE_VIEW_FULL, date.format(dateTimeFormatter));
-        List<MainScheduleViewEntity> result = jdbcTemplate.query(sqlQuery, new MainScheduleViewRowMapper());
+        List<MainScheduleEntity> result = jdbcTemplate.query(sqlQuery, mainScheduleRowMapper);
         SeanceInfoTtlCache.addSeanceInfoToCache(result);
         return result;
     }
 
     @Override
-    public List<MainScheduleViewEntity> getAllSeancesByPeriod(LocalDate periodStart, LocalDate periodEnd) {
-        List<MainScheduleViewEntity> result = new ArrayList<>();
+    public List<MainScheduleEntity> getAllSeancesByPeriod(LocalDate periodStart, LocalDate periodEnd) {
+        List<MainScheduleEntity> result = new ArrayList<>();
         while (periodStart.isBefore(periodEnd.plusDays(1))) {
             result.addAll(getAllSeancesByDate(periodStart));
             periodStart = periodStart.plusDays(1);
@@ -125,8 +121,8 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
     }
 
     @Override
-    public Map<String, List<MainScheduleViewEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date) {
-        Map<String, List<MainScheduleViewEntity>> result = new HashMap<>();
+    public Map<String, List<MainScheduleEntity>> getAllSeancesByMovieAndDateGroupByMoviePark(int movieId, LocalDate date) {
+        Map<String, List<MainScheduleEntity>> result = new HashMap<>();
 
         getAllSeancesByPeriod(date, date.plusDays(1)).forEach(currSeance -> {
             if (
@@ -138,7 +134,7 @@ public class RemoteDatabaseClientImpl implements DatabaseClient {
                     if (result.containsKey(movieParkName)) {
                         result.get(movieParkName).add(currSeance);
                     } else {
-                        List<MainScheduleViewEntity> currentMovieParkSeanceList = new ArrayList<>();
+                        List<MainScheduleEntity> currentMovieParkSeanceList = new ArrayList<>();
                         currentMovieParkSeanceList.add(currSeance);
                         result.put(movieParkName, currentMovieParkSeanceList);
                     }
