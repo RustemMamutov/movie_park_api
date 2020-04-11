@@ -5,18 +5,19 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.data.entities.HallsEntity;
+import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
-import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,11 +32,12 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @EnableJpaRepositories
 @ComponentScan("ru.api.moviepark")
-@PropertySource("/application-test.yaml")
-public class RemoteDatabaseClientImplTest {
+@SpringBootTest()
+@ActiveProfiles("dev")
+public class DatabaseClientImplTest {
 
     @Autowired
-    private RemoteDatabaseClientImpl remoteDatabaseClient;
+    private DatabaseClient databaseClient;
 
     @Autowired
     private HallsRepo hallsRepo;
@@ -56,12 +58,12 @@ public class RemoteDatabaseClientImplTest {
 
     @Test
     public void Should_GetSeanceById_When_ItIsGiven() {
-        MainScheduleViewEntity result = remoteDatabaseClient.getSeanceById(1);
-        MainScheduleViewEntity expected = MainScheduleViewEntity.builder()
+        MainScheduleEntity result = databaseClient.getSeanceById(1);
+        MainScheduleEntity expected = MainScheduleEntity.builder()
                 .seanceId(1)
                 .seanceDate(testDate)
-                .startTime(LocalTime.of(8,0,0))
-                .endTime(LocalTime.of(9,50,0))
+                .startTime(LocalTime.of(8, 0, 0))
+                .endTime(LocalTime.of(9, 50, 0))
                 .movieParkId(1)
                 .movieParkName("CinemaPark1")
                 .movieId(1)
@@ -76,40 +78,40 @@ public class RemoteDatabaseClientImplTest {
 
     @Test
     public void Should_GetAllSeancesByDate_When_ItIsGiven() {
-        List<MainScheduleViewEntity> resultList = remoteDatabaseClient.getAllSeancesByDate(testDate);
+        List<MainScheduleEntity> resultList = databaseClient.getAllSeancesByDate(testDate);
         assertEquals(21, resultList.size());
     }
 
     @Test
     public void Should_GetAllSeancesByPeriod_When_ItIsGiven() {
-        List<MainScheduleViewEntity> resultList = remoteDatabaseClient.getAllSeancesByPeriod(testDate, testDate.plusDays(1));
+        List<MainScheduleEntity> resultList = databaseClient.getAllSeancesByPeriod(testDate, testDate.plusDays(1));
         assertEquals(43, resultList.size());
     }
 
     @Test
     public void Should_GetAllMoviesByDate_When_ItIsGiven() {
-        Map<Integer, String> result = remoteDatabaseClient.getAllMoviesByDate(testDate);
+        Map<Integer, String> result = databaseClient.getAllMoviesByDate(testDate);
         assertTrue(result.containsValue("Movie1"));
 
-        result = remoteDatabaseClient.getAllMoviesByDate(testDate.plusDays(2));
+        result = databaseClient.getAllMoviesByDate(testDate.plusDays(2));
         assertTrue(result.containsValue("Movie1"));
         assertTrue(result.containsValue("Movie2"));
 
-        result = remoteDatabaseClient.getAllMoviesByDate(testDate.plusDays(4));
+        result = databaseClient.getAllMoviesByDate(testDate.plusDays(4));
         assertTrue(result.containsValue("Movie2"));
     }
 
     @Test
     public void Should_GetAllMoviesByPeriod_When_ItIsGiven() {
-        Map<LocalDate, Map<Integer, String>> result = remoteDatabaseClient.getAllMoviesByPeriod(testDate, testDate);
-        Map<Integer, String> allMoviesByDate = remoteDatabaseClient.getAllMoviesByDate(testDate);
+        Map<LocalDate, Map<Integer, String>> result = databaseClient.getAllMoviesByPeriod(testDate, testDate);
+        Map<Integer, String> allMoviesByDate = databaseClient.getAllMoviesByDate(testDate);
         Map<LocalDate, Map<Integer, String>> expected = new HashMap<>();
         expected.put(testDate, allMoviesByDate);
 
         assertEquals(expected, result);
 
-        result = remoteDatabaseClient.getAllMoviesByPeriod(testDate, testDate.plusDays(1));
-        Map<Integer, String> allMoviesByNextDate = remoteDatabaseClient.getAllMoviesByDate(testDate.plusDays(1));
+        result = databaseClient.getAllMoviesByPeriod(testDate, testDate.plusDays(1));
+        Map<Integer, String> allMoviesByNextDate = databaseClient.getAllMoviesByDate(testDate.plusDays(1));
         expected.put(testDate.plusDays(1), allMoviesByNextDate);
 
         assertEquals(expected, result);
@@ -126,8 +128,8 @@ public class RemoteDatabaseClientImplTest {
     public void Should_CreateNewSeance_When_InputInfoIsGiven() {
         CreateSeanceInput seanceInput = CreateSeanceInput.builder()
                 .date(testDate.plusDays(4))
-                .startTime(LocalTime.of(7,30))
-                .endTime(LocalTime.of(8,30))
+                .startTime(LocalTime.of(7, 30))
+                .endTime(LocalTime.of(8, 30))
                 .movieParkId(1)
                 .movieId(1)
                 .hallId(101)
@@ -135,11 +137,11 @@ public class RemoteDatabaseClientImplTest {
                 .vipPrice(200)
                 .build();
 
-        List<MainScheduleViewEntity> result = remoteDatabaseClient.getAllSeancesByDate(testDate.plusDays(4));
+        List<MainScheduleEntity> result = databaseClient.getAllSeancesByDate(testDate.plusDays(4));
         assertEquals(1, result.size());
-        remoteDatabaseClient.createNewSeance(seanceInput);
+        databaseClient.createNewSeance(seanceInput);
 
-        List<MainScheduleViewEntity> result2 = remoteDatabaseClient.getAllSeancesByDate(testDate.plusDays(4));
+        List<MainScheduleEntity> result2 = databaseClient.getAllSeancesByDate(testDate.plusDays(4));
         assertEquals(2, result2.size());
     }
 
@@ -167,7 +169,7 @@ public class RemoteDatabaseClientImplTest {
     @Test
     @Ignore
     public void Should_BlockOrUnblockPlaceOnSeance_WhenInputIsGiven() {
-        List<SeancePlacesEntity> result1 = remoteDatabaseClient.getSeancePlacesInfo(1);
+        List<SeancePlacesEntity> result1 = databaseClient.getSeancePlacesInfo(1);
 
         BlockUnblockPlaceInput input = BlockUnblockPlaceInput.builder()
                 .seanceId(1)
@@ -175,13 +177,13 @@ public class RemoteDatabaseClientImplTest {
                 .placeIdList(Arrays.asList(101, 102))
                 .build();
 
-        remoteDatabaseClient.blockOrUnblockPlaceOnSeance(input);
+        databaseClient.blockOrUnblockPlaceOnSeance(input);
 
-        List<SeancePlacesEntity> result2 = remoteDatabaseClient.getSeancePlacesInfo(1);
+        List<SeancePlacesEntity> result2 = databaseClient.getSeancePlacesInfo(1);
         int sum = 0;
         for (SeancePlacesEntity entity : result2) {
             if (entity.getBlocked()) {
-                sum ++;
+                sum++;
             }
         }
 

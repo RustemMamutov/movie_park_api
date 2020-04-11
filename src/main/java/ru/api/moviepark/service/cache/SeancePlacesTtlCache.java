@@ -1,10 +1,8 @@
 package ru.api.moviepark.service.cache;
 
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import ru.api.moviepark.config.MovieParkEnvironment;
+import lombok.extern.slf4j.Slf4j;
+import ru.api.moviepark.config.MovieParkEnv;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 
 import java.util.List;
@@ -16,10 +14,8 @@ import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-@Service
+@Slf4j
 public class SeancePlacesTtlCache {
-
-    private static Logger logger = LoggerFactory.getLogger(SeancePlacesTtlCache.class);
 
     @Getter
     public static class SeancePlacesCacheValue {
@@ -43,9 +39,9 @@ public class SeancePlacesTtlCache {
     private static long cacheLifeTime = 3;
     private static final Map<Integer, SeancePlacesCacheValue> seancePlacesInfoTtlCache = new ConcurrentHashMap<>();
 
-    private static MovieParkEnvironment env;
+    private static MovieParkEnv env;
 
-    public static void initSeancePlacesTtlCache(MovieParkEnvironment env) {
+    public static void initSeancePlacesTtlCache(MovieParkEnv env) {
         SeancePlacesTtlCache.env = env;
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
@@ -59,15 +55,15 @@ public class SeancePlacesTtlCache {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                logger.debug("Start flushing seances places cache. Cache size before flush: {}", seancePlacesInfoTtlCache.size());
+                log.debug("Start flushing seances places cache. Cache size before flush: {}", seancePlacesInfoTtlCache.size());
                 long current = System.currentTimeMillis();
                 for (Map.Entry<Integer, SeancePlacesCacheValue> entry : seancePlacesInfoTtlCache.entrySet()) {
                     if (entry.getValue().isExpired(current, cacheLifeTime)) {
-                        logger.debug("Remove element by seanceId: {}", entry.getKey());
+                        log.debug("Remove element by seanceId: {}", entry.getKey());
                         seancePlacesInfoTtlCache.remove(entry.getKey());
                     }
                 }
-                logger.debug("Finish flushing cache. Cache size after flush: {}", seancePlacesInfoTtlCache.size());
+                log.debug("Finish flushing cache. Cache size after flush: {}", seancePlacesInfoTtlCache.size());
             }
         }, 1, env.getSeanceInfoCacheFlushTimeout(), SECONDS);
     }
