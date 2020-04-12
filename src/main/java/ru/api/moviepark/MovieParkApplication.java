@@ -24,24 +24,15 @@ public class MovieParkApplication {
 
     private static void initCustomApplicationProperties() {
         try {
-            String dirtyPath = MovieParkApplication.class.getResource("").toString();
-            String jarPath = dirtyPath
-                    .replaceAll("^.*file:/", "")
-                    .replaceAll("jar!.*", "jar")
-                    .replaceAll("%20", " ");
-            if (!jarPath.endsWith(".jar")) { // this is needed if you plan to run the app using Spring Tools Suit play button.
-                jarPath = jarPath.replaceAll("/classes/.*", "/classes/");
-            }
-
-            Path yamlPath = Paths.get(jarPath).getParent().resolve("application.yaml");
-            File yamlFile = new File(yamlPath.toString());
-            if (yamlFile.exists()) {
-                log.info("Прочитан пользовательный файл конфигурации: {}", new String(Files.readAllBytes(yamlPath)));
-                try (InputStream is = new FileInputStream(yamlFile)){
+            Path yamlPath = Paths.get("application.yaml");
+            log.info("Yaml file path: {}", yamlPath);
+            if (Files.exists(yamlPath)) {
+                log.info("Reading custom application file: {}", new String(Files.readAllBytes(yamlPath)));
+                try (InputStream is = new FileInputStream(new File(yamlPath.toString()))){
                     System.getProperties().load(is);
                 }
             } else {
-                log.info("Отсутствует пользовательский файл конфигурации");
+                log.info("Custom application file doesn't exist");
             }
         } catch (Exception e) {
             e.printStackTrace();
