@@ -26,9 +26,10 @@ public class MovieParkApplication {
         try {
             Path yamlPath = Paths.get("application.yaml");
             log.info("Yaml file path: {}", yamlPath);
-            if (Files.exists(yamlPath)) {
+            log.info("Yaml file exists: {}", yamlPath.toFile().exists());
+            if (yamlPath.toFile().exists()) {
                 log.info("Reading custom application file: {}", new String(Files.readAllBytes(yamlPath)));
-                try (InputStream is = new FileInputStream(new File(yamlPath.toString()))){
+                try (InputStream is = Files.newInputStream(yamlPath)){
                     System.getProperties().load(is);
                 }
             } else {
