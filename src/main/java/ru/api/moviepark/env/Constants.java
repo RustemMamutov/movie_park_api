@@ -1,17 +1,8 @@
-package ru.api.moviepark.config;
-
-import org.springframework.stereotype.Component;
+package ru.api.moviepark.env;
 
 import java.time.format.DateTimeFormatter;
 
-@Component
 public class Constants {
-
-    public static MovieParkEnvironment env;
-
-    public Constants(MovieParkEnvironment environment) {
-        env = environment;
-    }
 
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -26,9 +17,4 @@ public class Constants {
     public static final String MOVIE_PARKS_TABLE_NAME = "movie_parks";
 
     public static final String SEANCE_PLACES_TABLE_NAME = "seances_places";
-
-    public static final String MAIN_SCHEDULE_VIEW_NAME = "main_schedule_view";
-
-    public static final String MAIN_SCHEDULE_VIEW_FULL =
-            String.format("%s.%s", SCHEMA_NAME, MAIN_SCHEDULE_VIEW_NAME);
 }

@@ -1,11 +1,9 @@
 package ru.api.moviepark.service.cache;
 
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import ru.api.moviepark.config.MovieParkEnvironment;
-import ru.api.moviepark.data.valueobjects.MainScheduleViewEntity;
+import lombok.extern.slf4j.Slf4j;
+import ru.api.moviepark.data.dto.MainScheduleDTO;
+import ru.api.moviepark.data.entities.MainScheduleEntity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,43 +17,13 @@ import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-@Service
+@Slf4j
 public class SeanceInfoTtlCache {
 
-    private static Logger logger = LoggerFactory.getLogger(SeanceInfoTtlCache.class);
-
-    @Getter
-    public static class SeanceInfoCacheValue {
-        private final long cacheTime;
-        private final Map<Integer, MainScheduleViewEntity> seanceFullInfoMap;
-
-        private static SeanceInfoCacheValue of(long cacheTime, Map<Integer, MainScheduleViewEntity> seanceFullInfo) {
-            return new SeanceInfoCacheValue(cacheTime, seanceFullInfo);
-        }
-
-        private static SeanceInfoCacheValue of(long cacheTime, MainScheduleViewEntity seanceFullInfo) {
-            Map<Integer, MainScheduleViewEntity> seancesMap = new HashMap<>();
-            seancesMap.put(seanceFullInfo.getSeanceId(), seanceFullInfo);
-            return new SeanceInfoCacheValue(cacheTime, seancesMap);
-        }
-
-        private SeanceInfoCacheValue(long cacheTime, Map<Integer, MainScheduleViewEntity> seanceFullInfo) {
-            this.cacheTime = cacheTime;
-            this.seanceFullInfoMap = seanceFullInfo;
-        }
-
-        private boolean isExpired(long currentTimeMillis, long cacheLifeTime) {
-            return currentTimeMillis - cacheTime > cacheLifeTime * 1000;
-        }
-    }
-
-    private static long cacheLifeTime = 3600;
     private static final Map<LocalDate, SeanceInfoCacheValue> seanceInfoListTtlCache = new ConcurrentHashMap<>();
+    private static long cacheLifeTime = 3600;
 
-    private static MovieParkEnvironment env;
-
-    public static void initSeanceInfoCache(MovieParkEnvironment env) {
-        SeanceInfoTtlCache.env = env;
+    public static void initSeanceInfoCache() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -68,20 +36,20 @@ public class SeanceInfoTtlCache {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                logger.debug("Start flushing seances cache. Size before flush: {}", seanceInfoListTtlCache.size());
+                log.debug("Start flushing seances cache. Size before flush: {}", seanceInfoListTtlCache.size());
                 long current = System.currentTimeMillis();
                 for (Map.Entry<LocalDate, SeanceInfoCacheValue> entry : seanceInfoListTtlCache.entrySet()) {
                     if (entry.getValue().isExpired(current, cacheLifeTime)) {
-                        logger.debug("Remove elements by date: {}", entry.getKey());
+                        log.debug("Remove elements by date: {}", entry.getKey());
                         seanceInfoListTtlCache.remove(entry.getKey());
                     }
                 }
-                logger.debug("Finish flushing seance cache. Size after flush: {}", seanceInfoListTtlCache.size());
+                log.debug("Finish flushing seance cache. Size after flush: {}", seanceInfoListTtlCache.size());
             }
         }, 1, 1800, SECONDS);
     }
 
-    public static MainScheduleViewEntity getSeanceByIdFromCache(int seanceId) {
+    public static MainScheduleDTO getSeanceByIdFromCache(int seanceId) {
         for (SeanceInfoCacheValue seanceInfoCacheValue : seanceInfoListTtlCache.values()) {
             if (seanceInfoCacheValue.getSeanceFullInfoMap().containsKey(seanceId)) {
                 return seanceInfoCacheValue.getSeanceFullInfoMap().get(seanceId);
@@ -90,11 +58,11 @@ public class SeanceInfoTtlCache {
         return null;
     }
 
-    public static Map<Integer, MainScheduleViewEntity> getSeancesMapByDateFromCache(LocalDate date) {
+    public static Map<Integer, MainScheduleDTO> getSeancesMapByDateFromCache(LocalDate date) {
         return seanceInfoListTtlCache.get(date).getSeanceFullInfoMap();
     }
 
-    public static List<MainScheduleViewEntity> getSeancesListByDateFromCache(LocalDate date) {
+    public static List<MainScheduleDTO> getSeancesListByDateFromCache(LocalDate date) {
         return new ArrayList<>(getSeancesMapByDateFromCache(date).values());
     }
 
@@ -112,21 +80,51 @@ public class SeanceInfoTtlCache {
         return seanceInfoListTtlCache.get(date) != null;
     }
 
-    public static void addSeanceInfoToCache(MainScheduleViewEntity seanceFullInfo) {
-        if (!seanceInfoListTtlCache.containsKey(seanceFullInfo.getSeanceDate())) {
-            seanceInfoListTtlCache.put(seanceFullInfo.getSeanceDate(),
-                    SeanceInfoCacheValue.of(System.currentTimeMillis(), seanceFullInfo));
-        } else {
-            seanceInfoListTtlCache.get(seanceFullInfo.getSeanceDate()).getSeanceFullInfoMap().put(
-                    seanceFullInfo.getSeanceId(), seanceFullInfo);
-        }
+    public static void addSeanceInfoToCache(MainScheduleDTO seanceFullInfo) {
+        seanceInfoListTtlCache.putIfAbsent(seanceFullInfo.getSeanceDate(),
+                SeanceInfoCacheValue.init(System.currentTimeMillis()));
+
+        seanceInfoListTtlCache.get(seanceFullInfo.getSeanceDate())
+                .getSeanceFullInfoMap()
+                .put(seanceFullInfo.getSeanceId(), seanceFullInfo);
     }
 
-    public static void addSeanceInfoToCache(List<MainScheduleViewEntity> seanceFullInfoList) {
-        seanceFullInfoList.forEach(SeanceInfoTtlCache::addSeanceInfoToCache);
+    public static void addSeanceInfoToCache(List<MainScheduleDTO> dtoList) {
+        dtoList.forEach(SeanceInfoTtlCache::addSeanceInfoToCache);
+    }
+
+    public static void convertToDtoAndAddToCache(MainScheduleEntity entity) {
+        addSeanceInfoToCache(entity.convertToDto());
+    }
+
+    public static void convertToDtoAndAddToCache(List<MainScheduleEntity> entityList) {
+        entityList.forEach(SeanceInfoTtlCache::convertToDtoAndAddToCache);
     }
 
     public static void clearAllCache() {
         seanceInfoListTtlCache.clear();
+    }
+
+    public static void clearCacheByDate(LocalDate date) {
+        seanceInfoListTtlCache.remove(date);
+    }
+
+    @Getter
+    public static class SeanceInfoCacheValue {
+        private final long cacheTime;
+        private final Map<Integer, MainScheduleDTO> seanceFullInfoMap;
+
+        private SeanceInfoCacheValue(long cacheTime, Map<Integer, MainScheduleDTO> seanceFullInfo) {
+            this.cacheTime = cacheTime;
+            this.seanceFullInfoMap = seanceFullInfo;
+        }
+
+        private static SeanceInfoCacheValue init(long cacheTime) {
+            return new SeanceInfoCacheValue(cacheTime, new HashMap<>());
+        }
+
+        private boolean isExpired(long currentTimeMillis, long cacheLifeTime) {
+            return currentTimeMillis - cacheTime > cacheLifeTime * 1000;
+        }
     }
 }

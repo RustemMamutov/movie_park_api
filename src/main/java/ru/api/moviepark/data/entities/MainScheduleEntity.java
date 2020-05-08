@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import javax.persistence.Column;
@@ -11,12 +12,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static ru.api.moviepark.config.Constants.MAIN_SCHEDULE_TABLE_NAME;
-import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
+import static ru.api.moviepark.env.Constants.MAIN_SCHEDULE_TABLE_NAME;
+import static ru.api.moviepark.env.Constants.SCHEMA_NAME;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,31 +33,33 @@ public class MainScheduleEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "seance_id", nullable = false)
-    Integer seanceId;
+    private Integer seanceId;
 
     @Column(name = "seance_date")
-    LocalDate seanceDate;
+    private LocalDate seanceDate;
 
     @Column(name = "start_time")
-    LocalTime startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time")
-    LocalTime endTime;
+    private LocalTime endTime;
 
-    @Column(name = "movie_park_id")
-    Integer movieParkId;
+    @ManyToOne
+    @JoinColumn(name = "movie_park_id", referencedColumnName = "id")
+    private MovieParksEntity movieParkEntity;
 
-    @Column(name = "movie_id")
-    Integer movieId;
+    @ManyToOne
+    @JoinColumn(name = "movie_id", referencedColumnName = "id")
+    private MoviesEntity movieEntity;
 
     @Column(name = "hall_id")
-    Integer hallId;
+    private Integer hallId;
 
     @Column(name = "base_price")
-    Integer basePrice;
+    private Integer basePrice;
 
     @Column(name = "vip_price")
-    Integer vipPrice;
+    private Integer vipPrice;
 
     public static MainScheduleEntity createMainScheduleEntity(CreateSeanceInput inputJson) {
         return MainScheduleEntity
@@ -60,11 +67,33 @@ public class MainScheduleEntity {
                 .seanceDate(inputJson.getDate())
                 .startTime(inputJson.getStartTime())
                 .endTime(inputJson.getEndTime())
-                .movieParkId(inputJson.getMovieParkId())
-                .movieId(inputJson.getMovieId())
+                .movieParkEntity(new MovieParksEntity(inputJson.getMovieParkId()))
+                .movieEntity(new MoviesEntity(inputJson.getMovieId()))
                 .hallId(inputJson.getHallId())
                 .basePrice(inputJson.getBasePrice())
                 .vipPrice(inputJson.getVipPrice())
                 .build();
+    }
+
+    public MainScheduleDTO convertToDto(){
+        return MainScheduleDTO.builder()
+                .seanceId(this.getSeanceId())
+                .seanceDate(this.getSeanceDate())
+                .startTime(this.getStartTime())
+                .endTime(this.getEndTime())
+                .movieParkId(this.getMovieParkEntity().getMovieParkId())
+                .movieParkName(this.getMovieParkEntity().getMovieParkName())
+                .movieId(this.getMovieEntity().getMovieId())
+                .movieName(this.getMovieEntity().getMovieName())
+                .hallId(this.getHallId())
+                .basePrice(this.getBasePrice())
+                .vipPrice(this.getVipPrice())
+                .build();
+    }
+
+    public static List<MainScheduleDTO> convertToDtoList(List<MainScheduleEntity> entityList){
+        return entityList.stream()
+                .map(MainScheduleEntity::convertToDto)
+                .collect(Collectors.toList());
     }
 }

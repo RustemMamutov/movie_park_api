@@ -1,28 +1,40 @@
+spring.profiles.active: local
+server.port: 9000
+
 spring:
   datasource:
-    # localhost database in docker container
-    url: jdbc:postgresql://localhost:5432/trade_center
-    username: postgres
-    password: password
-    driverClassName: org.postgresql.Driver
+    prod:
+      # real database
+      url: url
+      username: user
+      password: password
+      driverClassName: driver
+    local:
+      # localhost database in docker container
+      url: jdbc:postgresql://localhost:5432/trade_center
+      username: postgres
+      password: password
+      driverClassName: org.postgresql.Driver
   jpa:
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
     show-sql: true
     hibernate.ddl-auto: validate
 
-server.port: 9000
-
-max.cache.life.time: 30000
-min.cache.life.time: 2000
-seance.info.cache.flush.timeout: 3
-rps.map.flush.timeout: 3
-rps.life.time: 120
+cache:
+  seance_info:
+    flush_timeout: 10
+    flush_timeout_max: 30
+    flush_timeout_min: 2
+  rps:
+    flush_timeout: 10
+    lifetime: 120
 
 # actuator
 management:
   endpoints:
-    web.base-path: /movie_park_service
-    # web.exposure.include: *
-    # HEALTH ENDPOINT
+    web.base-path: /movie-park-service
+#    web.exposure.include: env,info,health,httptrace,logfile,metrics,mappings
+#  HEALTH ENDPOINT
+  endpoint:
     health.show-details: always
   health.diskSpace.enabled: false

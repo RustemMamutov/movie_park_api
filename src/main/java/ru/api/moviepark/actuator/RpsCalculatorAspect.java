@@ -1,9 +1,9 @@
 package ru.api.moviepark.actuator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
@@ -12,16 +12,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RpsCalculatorAspect {
 
-    @Pointcut("execution(* ru.api.moviepark.controller.MovieParkController.*(..))")
-    public void controllerMethod(){ }
+    @Pointcut("execution(* ru.api.moviepark.web.controller.MovieParkRestController.*(..))")
+    public void controllerMethod() {
+    }
 
-    @Pointcut("@annotation(ru.api.moviepark.actuator.IncrRps)")
-    public void incrRpsMethod() { }
-
-    @Around("controllerMethod() || incrRpsMethod()")
-    public Object incrRps(ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    @Before("controllerMethod() || @annotation(IncrRps)")
+    public void incrRps(JoinPoint thisJoinPoint) {
         log.debug("incr RPS before execute {}", thisJoinPoint.getSignature().getName());
         RpsCalculatorUtil.incrRps();
-        return thisJoinPoint.proceed();
     }
 }

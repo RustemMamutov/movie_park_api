@@ -5,18 +5,18 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HealthCheck implements HealthIndicator {
+public class RPSHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
         int rps = RpsCalculatorUtil.getRps();
         if (rps > 150) {
             return Health.down()
-                    .withDetail("RPS", rps)
+                    .withDetail("RPS current: ", rps)
                     .build();
         } else {
             return Health.up()
-                    .withDetail("RPS", rps)
+                    .withDetail("RPS current: ", rps)
                     .build();
         }
     }

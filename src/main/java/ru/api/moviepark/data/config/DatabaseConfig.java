@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
@@ -26,36 +25,45 @@ import javax.sql.DataSource;
 )
 public class DatabaseConfig {
 
-    private Environment env;
+    private final Environment env;
 
     public DatabaseConfig(Environment env) {
         this.env = env;
     }
 
-    @Primary
-    @Bean(name = "Datasource")
-    public DataSource customerDataSource() {
-
+    @Bean
+    @Profile("prod")
+    public DataSource customerProdDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("spring.datasource.driverClassName"));
-        dataSource.setUrl(env.getProperty("spring.datasource.url"));
-        dataSource.setUsername(env.getProperty("spring.datasource.username"));
-        dataSource.setPassword(env.getProperty("spring.datasource.password"));
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.prod.driverClassName"));
+        dataSource.setUrl(env.getProperty("spring.datasource.prod.url"));
+        dataSource.setUsername(env.getProperty("spring.datasource.prod.username"));
+        dataSource.setPassword(env.getProperty("spring.datasource.prod.password"));
 
         return dataSource;
     }
 
-    @Primary
+    @Bean
+    @Profile("local")
+    public DataSource customerDevDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.local.driverClassName"));
+        dataSource.setUrl(env.getProperty("spring.datasource.local.url"));
+        dataSource.setUsername(env.getProperty("spring.datasource.local.username"));
+        dataSource.setPassword(env.getProperty("spring.datasource.local.password"));
+
+        return dataSource;
+    }
+
     @Bean(name = "EntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
-    entityManagerFactory(EntityManagerFactoryBuilder builder, @Qualifier("Datasource") DataSource dataSource) {
+    entityManagerFactory(EntityManagerFactoryBuilder builder, DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
                 .packages("ru.api.moviepark.data")
                 .build();
     }
 
-    @Primary
     @Bean(name = "TransactionManager")
     public PlatformTransactionManager customerTransactionManager(
             @Qualifier("EntityManagerFactory") EntityManagerFactory customerEntityManagerFactory) {

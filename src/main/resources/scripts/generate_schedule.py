@@ -1,11 +1,10 @@
 import os
+import random
 from collections import namedtuple
 from copy import deepcopy
 from datetime import datetime as dt
-from datetime import timedelta as td
 from datetime import time
-import random
-
+from datetime import timedelta as td
 
 hall_info = namedtuple("hall_info", "seance_timeout start_time end_time_delta prices_policy hall_places")
 movie_info = namedtuple("movie_info", "id movie_name movie_time start_date end_date")
@@ -100,7 +99,7 @@ def generate_seances_for_date_and_hall(seance_id, curr_date, hall_id, actual_mov
     seances_start_dt = curr_date + curr_hall_info.start_time
     seances_end_dt = seances_start_dt + curr_hall_info.end_time_delta
     prices_policy = curr_hall_info.prices_policy
-    movie_park_id = int(hall_id/100)
+    movie_park_id = int(hall_id / 100)
     while seances_start_dt <= seances_end_dt:
         random_movie = random.choice(actual_movies)
         curr_seance_end_dt = seances_start_dt + random_movie.movie_time
@@ -127,7 +126,8 @@ def generate_schedule(period_start_date, days):
             for each_hall_id in movie_park_halls.keys():
                 if result_list:
                     seance_id = result_list[-1].seance_id + 1
-                result_list.extend(generate_seances_for_date_and_hall(seance_id, curr_date, each_hall_id, actual_movies))
+                result_list.extend(
+                    generate_seances_for_date_and_hall(seance_id, curr_date, each_hall_id, actual_movies))
 
         curr_date = curr_date + td(days=1)
 
