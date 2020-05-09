@@ -75,7 +75,13 @@ public class MainScheduleEntity {
                 .build();
     }
 
-    public MainScheduleDTO convertToDto(){
+    public static List<MainScheduleDTO> convertToDtoList(List<MainScheduleEntity> entityList) {
+        return entityList.stream()
+                .map(MainScheduleEntity::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public MainScheduleDTO convertToDto() {
         return MainScheduleDTO.builder()
                 .seanceId(this.getSeanceId())
                 .seanceDate(this.getSeanceDate())
@@ -89,11 +95,5 @@ public class MainScheduleEntity {
                 .basePrice(this.getBasePrice())
                 .vipPrice(this.getVipPrice())
                 .build();
-    }
-
-    public static List<MainScheduleDTO> convertToDtoList(List<MainScheduleEntity> entityList){
-        return entityList.stream()
-                .map(MainScheduleEntity::convertToDto)
-                .collect(Collectors.toList());
     }
 }

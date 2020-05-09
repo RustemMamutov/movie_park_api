@@ -1,4 +1,4 @@
-package ru.api.moviepark.config;
+package ru.api.moviepark.web;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;

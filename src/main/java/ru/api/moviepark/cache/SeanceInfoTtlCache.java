@@ -1,4 +1,4 @@
-package ru.api.moviepark.service.cache;
+package ru.api.moviepark.cache;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -23,7 +24,7 @@ public class SeanceInfoTtlCache {
     private static final Map<LocalDate, SeanceInfoCacheValue> seanceInfoListTtlCache = new ConcurrentHashMap<>();
     private static long cacheLifeTime = 3600;
 
-    public static void initSeanceInfoCache() {
+    public static void init() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -49,7 +50,7 @@ public class SeanceInfoTtlCache {
         }, 1, 1800, SECONDS);
     }
 
-    public static MainScheduleDTO getSeanceByIdFromCache(int seanceId) {
+    public static MainScheduleDTO getSeanceById(int seanceId) {
         for (SeanceInfoCacheValue seanceInfoCacheValue : seanceInfoListTtlCache.values()) {
             if (seanceInfoCacheValue.getSeanceFullInfoMap().containsKey(seanceId)) {
                 return seanceInfoCacheValue.getSeanceFullInfoMap().get(seanceId);
@@ -58,15 +59,15 @@ public class SeanceInfoTtlCache {
         return null;
     }
 
-    public static Map<Integer, MainScheduleDTO> getSeancesMapByDateFromCache(LocalDate date) {
+    public static Map<Integer, MainScheduleDTO> getSeancesMapByDate(LocalDate date) {
         return seanceInfoListTtlCache.get(date).getSeanceFullInfoMap();
     }
 
-    public static List<MainScheduleDTO> getSeancesListByDateFromCache(LocalDate date) {
-        return new ArrayList<>(getSeancesMapByDateFromCache(date).values());
+    public static List<MainScheduleDTO> getSeancesListByDate(LocalDate date) {
+        return new ArrayList<>(getSeancesMapByDate(date).values());
     }
 
-    public static boolean checkCacheContainsElementById(int seanceId) {
+    public static boolean containsElementById(int seanceId) {
         for (SeanceInfoCacheValue seanceInfoCacheValue : seanceInfoListTtlCache.values()) {
             if (seanceInfoCacheValue.getSeanceFullInfoMap().containsKey(seanceId)) {
                 return true;
@@ -76,11 +77,11 @@ public class SeanceInfoTtlCache {
         return false;
     }
 
-    public static boolean checkCacheContainsElementByDate(LocalDate date) {
+    public static boolean containsElementByDate(LocalDate date) {
         return seanceInfoListTtlCache.get(date) != null;
     }
 
-    public static void addSeanceInfoToCache(MainScheduleDTO seanceFullInfo) {
+    public static void addSeanceInfo(MainScheduleDTO seanceFullInfo) {
         seanceInfoListTtlCache.putIfAbsent(seanceFullInfo.getSeanceDate(),
                 SeanceInfoCacheValue.init(System.currentTimeMillis()));
 
@@ -89,16 +90,16 @@ public class SeanceInfoTtlCache {
                 .put(seanceFullInfo.getSeanceId(), seanceFullInfo);
     }
 
-    public static void addSeanceInfoToCache(List<MainScheduleDTO> dtoList) {
-        dtoList.forEach(SeanceInfoTtlCache::addSeanceInfoToCache);
+    public static void addSeanceInfo(List<MainScheduleDTO> dtoList) {
+        dtoList.forEach(SeanceInfoTtlCache::addSeanceInfo);
     }
 
-    public static void convertToDtoAndAddToCache(MainScheduleEntity entity) {
-        addSeanceInfoToCache(entity.convertToDto());
+    public static void convertToDtoAndAdd(MainScheduleEntity entity) {
+        addSeanceInfo(entity.convertToDto());
     }
 
-    public static void convertToDtoAndAddToCache(List<MainScheduleEntity> entityList) {
-        entityList.forEach(SeanceInfoTtlCache::convertToDtoAndAddToCache);
+    public static void convertToDtoAndAdd(List<MainScheduleEntity> entityList) {
+        entityList.forEach(SeanceInfoTtlCache::convertToDtoAndAdd);
     }
 
     public static void clearAllCache() {
@@ -107,6 +108,21 @@ public class SeanceInfoTtlCache {
 
     public static void clearCacheByDate(LocalDate date) {
         seanceInfoListTtlCache.remove(date);
+    }
+
+    private static List<LocalDate> findDateListBySeanceId(int seanceId) {
+        return seanceInfoListTtlCache.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().getSeanceFullInfoMap().containsKey(seanceId))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    public static synchronized void clearCacheBySeanceId(int seanceId) {
+        List<LocalDate> result = findDateListBySeanceId(seanceId);
+        if (!result.isEmpty()) {
+            result.forEach(seanceInfoListTtlCache::remove);
+        }
     }
 
     @Getter

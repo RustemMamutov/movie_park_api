@@ -1,6 +1,6 @@
 ###################### RENDERED FROM JINJA TEMPLATE ######################
 
-spring.profiles.active: {{ spring_profile | default(local) }}
+spring.profiles.active: {{ spring_profile | default("local") }}
 server.port: {{ server_port | default(9000) }}
 
 spring:
@@ -15,7 +15,7 @@ spring:
       # localhost database in docker container
       url: jdbc:postgresql://localhost:5432/trade_center
       username: postgres
-      password: password
+      password: movie_park_api_password
       driverClassName: org.postgresql.Driver
   jpa:
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
@@ -25,8 +25,8 @@ spring:
 cache:
   seance_info:
     flush_timeout: {{ seance_info_cache_flush_timeout | default(10) }}
-    flush_timeout_max: {{ seance_info_cache_flush_timeout_max | default(30) }}
     flush_timeout_min: {{ seance_info_cache_flush_timeout_min | default(2) }}
+    flush_timeout_max: {{ seance_info_cache_flush_timeout_max | default(30) }}
   rps:
     flush_timeout: {{ rps_flush_timeout | default(10) }}
     lifetime: {{ rps_lifetime | default(120) }}
@@ -34,7 +34,7 @@ cache:
 # actuator
 management:
   endpoints:
-    web.base-path: /movie-park-service
+    web.base-path: /movie-park/service
 #    web.exposure.include: env,info,health,httptrace,logfile,metrics,mappings
 #  HEALTH ENDPOINT
   endpoint:

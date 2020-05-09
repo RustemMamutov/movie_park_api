@@ -1,5 +1,7 @@
 package ru.api.moviepark.util;
 
+import ru.api.moviepark.cache.HallsTtlCache;
+import ru.api.moviepark.cache.SeanceInfoTtlCache;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
@@ -30,33 +32,39 @@ public class CheckInputUtil {
         CheckInputUtil.hallsRepo = hallsRepo;
     }
 
-    public static void checkSeanceIdExist(int seanceId) {
-        if (mainScheduleRepo.checkSeanceIdExists(seanceId).orElse(false)) {
+    public static void checkSeanceIdExists(int seanceId) {
+        if (SeanceInfoTtlCache.containsElementById(seanceId)) {
+            return;
+        }
+        if (mainScheduleRepo.checkSeanceIdExists(seanceId)) {
             return;
         }
         throw new MyInvalidInputException(INVALID_SEANCE_ID);
     }
 
-    public static void checkHallIdExist(int hallId) {
-        if (hallsRepo.checkHallIdExists(hallId).orElse(false)) {
+    public static void checkHallIdExists(int hallId) {
+        if (HallsTtlCache.containsElementById(hallId)) {
+            return;
+        }
+        if (hallsRepo.checkHallIdExists(hallId)) {
             return;
         }
         throw new MyInvalidInputException(INVALID_HALL);
     }
 
-    public static void checkPrice(int price){
+    public static void checkPrice(int price) {
         if (price <= 0) {
             throw new MyInvalidInputException(INVALID_PRICE);
         }
     }
 
-    public static void checkInputDate(LocalDate inputDate){
+    public static void checkInputDate(LocalDate inputDate) {
         if (inputDate.isBefore(LocalDate.now())) {
             throw new MyInvalidInputException(INVALID_DATE);
         }
     }
 
-    public static void checkInputTimePeriod(LocalTime inputStartTime, LocalTime inputEndTime){
+    public static void checkInputTimePeriod(LocalTime inputStartTime, LocalTime inputEndTime) {
         if (inputEndTime.isBefore(inputStartTime)) {
             throw new MyInvalidInputException(INVALID_START_END_TIME);
         }
@@ -67,7 +75,7 @@ public class CheckInputUtil {
         int inputHallId = inputJson.getHallId();
 
         checkInputDate(inputJson.getDate());
-        checkHallIdExist(inputJson.getHallId());
+        checkHallIdExists(inputJson.getHallId());
         checkPrice(inputJson.getBasePrice());
         checkPrice(inputJson.getVipPrice());
 
@@ -82,7 +90,7 @@ public class CheckInputUtil {
         long crossingByTimeCount = allSeancesForDate.stream()
                 .filter(seance ->
                         checkTimeInSeanceInterval(seance, inputStartTime) ||
-                        checkTimeInSeanceInterval(seance, inputEndTime))
+                                checkTimeInSeanceInterval(seance, inputEndTime))
                 .count();
 
         if (crossingByTimeCount > 0) {

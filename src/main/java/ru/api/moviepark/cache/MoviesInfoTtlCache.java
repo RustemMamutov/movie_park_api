@@ -1,4 +1,4 @@
-package ru.api.moviepark.service.cache;
+package ru.api.moviepark.cache;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +16,7 @@ public class MoviesInfoTtlCache {
 
     private static final Map<LocalDate, Map<Integer, String>> moviesSortByDateTtlCache = new ConcurrentHashMap<>();
 
-    public static void initMoviesInfoCache() {
+    public static void init() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -26,23 +26,18 @@ public class MoviesInfoTtlCache {
             }
         });
 
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                moviesSortByDateTtlCache.clear();
-            }
-        }, 1, 24, HOURS);
+        scheduler.scheduleAtFixedRate(moviesSortByDateTtlCache::clear, 1, 24, HOURS);
     }
 
-    public static Map<Integer, String> getElementByDateFromCache(LocalDate date) {
+    public static Map<Integer, String> getElementByDate(LocalDate date) {
         return moviesSortByDateTtlCache.get(date);
     }
 
-    public static boolean containsElement(LocalDate date) {
+    public static boolean containsElementByDate(LocalDate date) {
         return moviesSortByDateTtlCache.containsKey(date);
     }
 
-    public static void addElementToCache(LocalDate date, Map<Integer, String> movies) {
+    public static void addElement(LocalDate date, Map<Integer, String> movies) {
         moviesSortByDateTtlCache.put(date, movies);
     }
 }

@@ -5,6 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.api.moviepark.cache.HallsTtlCache;
+import ru.api.moviepark.cache.MoviesInfoTtlCache;
+import ru.api.moviepark.cache.SeanceInfoTtlCache;
+import ru.api.moviepark.cache.SeancePlacesTtlCache;
 import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
@@ -13,9 +17,6 @@ import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
-import ru.api.moviepark.service.cache.MoviesInfoTtlCache;
-import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
-import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
 import ru.api.moviepark.util.CheckInputUtil;
 
 import java.time.LocalDate;
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static ru.api.moviepark.data.entities.MainScheduleEntity.createMainScheduleEntity;
 import static ru.api.moviepark.env.Constants.SCHEMA_NAME;
@@ -51,26 +51,26 @@ public class MovieParkClientImpl implements MovieParkClient {
 
     @Override
     public MainScheduleDTO getSeanceById(int seanceId) {
-        CheckInputUtil.checkSeanceIdExist(seanceId);
-        MainScheduleDTO result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
+        CheckInputUtil.checkSeanceIdExists(seanceId);
+        MainScheduleDTO result = SeanceInfoTtlCache.getSeanceById(seanceId);
         if (result == null) {
             List<MainScheduleEntity> entities = mainScheduleRepo.findAllSeancesInTheSameDate(seanceId);
-            SeanceInfoTtlCache.convertToDtoAndAddToCache(entities);
-            result = SeanceInfoTtlCache.getSeanceByIdFromCache(seanceId);
+            SeanceInfoTtlCache.convertToDtoAndAdd(entities);
+            result = SeanceInfoTtlCache.getSeanceById(seanceId);
         }
         return result;
     }
 
     @Override
     public List<MainScheduleDTO> getAllSeancesByDate(LocalDate date) {
-        if (SeanceInfoTtlCache.checkCacheContainsElementByDate(date)) {
-            return new ArrayList<>(SeanceInfoTtlCache.getSeancesMapByDateFromCache(date).values());
+        if (SeanceInfoTtlCache.containsElementByDate(date)) {
+            return new ArrayList<>(SeanceInfoTtlCache.getSeancesMapByDate(date).values());
         }
 
         List<MainScheduleEntity> entities = mainScheduleRepo.findAllBySeanceDate(date);
         List<MainScheduleDTO> result = MainScheduleEntity.convertToDtoList(entities);
 
-        SeanceInfoTtlCache.addSeanceInfoToCache(result);
+        SeanceInfoTtlCache.addSeanceInfo(result);
         return result;
     }
 
@@ -87,8 +87,8 @@ public class MovieParkClientImpl implements MovieParkClient {
 
     @Override
     public Map<Integer, String> getAllMoviesByDate(LocalDate date) {
-        if (MoviesInfoTtlCache.containsElement(date)) {
-            return MoviesInfoTtlCache.getElementByDateFromCache(date);
+        if (MoviesInfoTtlCache.containsElementByDate(date)) {
+            return MoviesInfoTtlCache.getElementByDate(date);
         }
 
         List<MainScheduleDTO> entities = getAllSeancesByDate(date);
@@ -96,7 +96,7 @@ public class MovieParkClientImpl implements MovieParkClient {
         entities.forEach(dto -> result.putIfAbsent(dto.getMovieId(), dto.getMovieName()));
 
         if (result.size() > 0) {
-            MoviesInfoTtlCache.addElementToCache(date, result);
+            MoviesInfoTtlCache.addElement(date, result);
         }
         return result;
     }
@@ -142,6 +142,15 @@ public class MovieParkClientImpl implements MovieParkClient {
         mainScheduleRepo.save(newSeanceEntity);
     }
 
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void deleteSeance(int seanceId) {
+        CheckInputUtil.checkSeanceIdExists(seanceId);
+        SeanceInfoTtlCache.clearCacheBySeanceId(seanceId);
+        mainScheduleRepo.deleteById(seanceId);
+        seancesPlacesRepo.deleteAllBySeanceId(seanceId);
+    }
+
     @Transactional
     public void updateScheduleTable(int days) {
         try {
@@ -153,26 +162,28 @@ public class MovieParkClientImpl implements MovieParkClient {
     }
 
     public List<HallsEntity> getHallPlacesInfo(int hallId) {
-        return hallsRepo.findAllByHallId(hallId).orElse(null);
+        CheckInputUtil.checkHallIdExists(hallId);
+        return HallsTtlCache.getElementsById(hallId);
     }
 
     public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
+        CheckInputUtil.checkSeanceIdExists(seanceId);
         log.info("Getting full info for seance id = " + seanceId);
-        if (SeancePlacesTtlCache.checkCacheContainsElement(seanceId)) {
-            return SeancePlacesTtlCache.getSeancePlacesInfoByIdFromCache(seanceId);
-        } else {
-            List<SeancePlacesEntity> seanceFullInfo = seancesPlacesRepo.findAllBySeanceId(seanceId);
-            SeancePlacesTtlCache.addSeancePlacesInfoToCache(seanceId, seanceFullInfo);
-            return seanceFullInfo;
+        if (SeancePlacesTtlCache.containsElementById(seanceId)) {
+            return SeancePlacesTtlCache.getSeancePlacesInfoById(seanceId);
         }
+
+        List<SeancePlacesEntity> seanceFullInfo = seancesPlacesRepo.findAllBySeanceId(seanceId);
+        SeancePlacesTtlCache.addSeancePlacesInfo(seanceId, seanceFullInfo);
+        return seanceFullInfo;
     }
 
     @Transactional
     @Override
-    public synchronized void blockOrUnblockPlaceOnSeance(int seanceId, List<Integer> placeList, boolean blocked){
-        CheckInputUtil.checkSeanceIdExist(seanceId);
+    public synchronized void blockOrUnblockPlaceOnSeance(int seanceId, List<Integer> placeList, boolean blocked) {
+        CheckInputUtil.checkSeanceIdExists(seanceId);
         log.info("Updating places {} in seance {}. Set blocked value: {}", placeList, seanceId, blocked);
         seancesPlacesRepo.blockOrUnblockThePlace(seanceId, placeList, blocked);
-        SeancePlacesTtlCache.removeElementFromCache(seanceId);
+        SeancePlacesTtlCache.removeElement(seanceId);
     }
 }

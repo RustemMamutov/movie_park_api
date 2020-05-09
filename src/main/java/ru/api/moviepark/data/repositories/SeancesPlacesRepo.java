@@ -3,7 +3,6 @@ package ru.api.moviepark.data.repositories;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.entities.SeancePlacesId;
 
@@ -14,9 +13,9 @@ public interface SeancesPlacesRepo extends CrudRepository<SeancePlacesEntity, Se
     List<SeancePlacesEntity> findAllBySeanceId(int id);
 
     @Modifying
-    @Query("update SeancePlacesEntity entity set entity.blocked = :blocked where entity.seanceId = :seanceId " +
+    @Query("update SeancePlacesEntity entity set entity.blocked = :blocked where entity.seanceId = :id " +
             "and entity.placeId IN :placeIdList")
-    void blockOrUnblockThePlace(@Param("seanceId") int seanceId,
-                                @Param("placeIdList") List<Integer> placeIdList,
-                                @Param("blocked") boolean blocked);
+    void blockOrUnblockThePlace(int id, List<Integer> placeIdList, boolean blocked);
+
+    void deleteAllBySeanceId(int id);
 }

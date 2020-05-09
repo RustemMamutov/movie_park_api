@@ -9,7 +9,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.service.MovieParkClient;
-import ru.api.moviepark.service.cache.SeanceInfoTtlCache;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,35 +35,35 @@ public class SeanceInfoTtlCacheTest {
 
     @Test
     public void Should_GetSeanceById_When_ItIsGiven() {
-        assertFalse(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
+        assertFalse(SeanceInfoTtlCache.containsElementByDate(testDate));
         movieParkClient.getSeanceById(1);
-        assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
+        assertTrue(SeanceInfoTtlCache.containsElementByDate(testDate));
 
-        List<MainScheduleDTO> result = SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate);
+        List<MainScheduleDTO> result = SeanceInfoTtlCache.getSeancesListByDate(testDate);
         assertEquals(21, result.size());
     }
 
     @Test
     public void Should_CacheAllSeancesByDate_When_ResponseWasReturned() {
-        assertFalse(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
+        assertFalse(SeanceInfoTtlCache.containsElementByDate(testDate));
         movieParkClient.getAllSeancesByDate(testDate);
-        assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
+        assertTrue(SeanceInfoTtlCache.containsElementByDate(testDate));
 
-        List<MainScheduleDTO> result = SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate);
+        List<MainScheduleDTO> result = SeanceInfoTtlCache.getSeancesListByDate(testDate);
         assertEquals(21, result.size());
     }
 
     @Test
     public void Should_CacheAllSeancesByPeriod_When_ResponseWasReturned() {
-        assertFalse(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
-        assertFalse(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate.plusDays(1)));
+        assertFalse(SeanceInfoTtlCache.containsElementByDate(testDate));
+        assertFalse(SeanceInfoTtlCache.containsElementByDate(testDate.plusDays(1)));
 
         movieParkClient.getAllSeancesByPeriod(testDate, testDate.plusDays(1));
 
-        assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate));
-        assertTrue(SeanceInfoTtlCache.checkCacheContainsElementByDate(testDate.plusDays(1)));
+        assertTrue(SeanceInfoTtlCache.containsElementByDate(testDate));
+        assertTrue(SeanceInfoTtlCache.containsElementByDate(testDate.plusDays(1)));
 
-        assertEquals(21, SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate).size());
-        assertEquals(22, SeanceInfoTtlCache.getSeancesListByDateFromCache(testDate.plusDays(1)).size());
+        assertEquals(21, SeanceInfoTtlCache.getSeancesListByDate(testDate).size());
+        assertEquals(22, SeanceInfoTtlCache.getSeancesListByDate(testDate.plusDays(1)).size());
     }
 }

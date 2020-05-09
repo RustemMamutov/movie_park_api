@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RpsCalculatorAspect {
 
-    @Pointcut("execution(* ru.api.moviepark.web.controller.MovieParkRestController.*(..))")
+    @Pointcut("execution(* ru.api.moviepark.web.controller.ApiRestController.*(..))")
     public void controllerMethod() {
     }
 

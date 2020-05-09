@@ -148,3 +148,11 @@ INSERT into movie_park.seances_places
         where main_schedule.seance_date <= '2030-01-05'
         order by seance_id, place_id
     );
+
+INSERT INTO movie_park.roles (id,description,permissions) VALUES
+(1,'admin','ROLE_CAN_READ,ROLE_CAN_MODIFY,ROLE_CAN_CREATE,ROLE_CAN_DELETE')
+,(2,'operator','ROLE_CAN_READ,ROLE_CAN_MODIFY');
+
+INSERT INTO movie_park.user_credentials (email,"password","role") VALUES
+('admin@gmail.com','password',1)
+,('operator@gmail.com','password',2);

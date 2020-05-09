@@ -9,20 +9,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.api.moviepark.actuator.RpsCalculatorUtil;
-import ru.api.moviepark.service.cache.SeancePlacesTtlCache;
+import ru.api.moviepark.cache.SeancePlacesTtlCache;
+import ru.api.moviepark.security.AllowServiceModify;
+import ru.api.moviepark.security.AllowServiceRead;
 
 @RestController
 @Slf4j
-@RequestMapping("/movie-park-service")
-public class MovieParkServiceRestController {
+@RequestMapping("/movie-park/service")
+public class ServiceRestController {
 
-    @GetMapping("/change-cache-ttl")
+    @GetMapping("/cache/seance-info/change-ttl")
     @ResponseStatus(HttpStatus.ACCEPTED)
+    @AllowServiceModify
     public void changeCacheTtl(@RequestParam String ttl) {
         SeancePlacesTtlCache.setCacheLifeTime(Integer.parseInt(ttl));
     }
 
     @GetMapping("/get-rps-statistics")
+    @AllowServiceRead
     public ObjectNode getRpsStatistics() {
         return RpsCalculatorUtil.getRpsStatistics();
     }

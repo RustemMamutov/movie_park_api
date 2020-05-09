@@ -25,6 +25,8 @@ public interface MovieParkClient {
 
     void createNewSeance(CreateSeanceInput inputJson);
 
+    void deleteSeance(int seanceId);
+
     /**
      * Update seances for next days.
      */

@@ -1,4 +1,4 @@
-package ru.api.moviepark.service.cache;
+package ru.api.moviepark.cache;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class SeancePlacesTtlCache {
         SeancePlacesTtlCache.env = env;
     }
 
-    public static void initSeancePlacesTtlCache() {
+    public static void init() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -59,11 +59,11 @@ public class SeancePlacesTtlCache {
                 Arrays.toString(seancePlacesInfoTtlCache.keySet().toArray()));
     }
 
-    public static List<SeancePlacesEntity> getSeancePlacesInfoByIdFromCache(int seanceId) {
+    public static List<SeancePlacesEntity> getSeancePlacesInfoById(int seanceId) {
         return seancePlacesInfoTtlCache.get(seanceId).getSeancePlacesFullInfo();
     }
 
-    public static void removeElementFromCache(int seanceId) {
+    public static void removeElement(int seanceId) {
         seancePlacesInfoTtlCache.remove(seanceId);
     }
 
@@ -75,11 +75,11 @@ public class SeancePlacesTtlCache {
         }
     }
 
-    public static boolean checkCacheContainsElement(int seanceId) {
+    public static boolean containsElementById(int seanceId) {
         return seancePlacesInfoTtlCache.containsKey(seanceId);
     }
 
-    public static void addSeancePlacesInfoToCache(int seanceId, List<SeancePlacesEntity> seancePlacesInfo) {
+    public static void addSeancePlacesInfo(int seanceId, List<SeancePlacesEntity> seancePlacesInfo) {
         long currentTime = System.currentTimeMillis();
         seancePlacesInfoTtlCache.put(seanceId, SeancePlacesCacheValue.of(currentTime, seancePlacesInfo));
     }

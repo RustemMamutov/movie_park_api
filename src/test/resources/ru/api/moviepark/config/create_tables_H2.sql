@@ -41,18 +41,17 @@ CREATE TABLE movie_park.seances_places (
 	PRIMARY KEY (seance_id, place_id)
 );
 
-CREATE OR REPLACE VIEW movie_park.main_schedule_view
-AS SELECT main_schedule.seance_id,
-    main_schedule.seance_date,
-    main_schedule.start_time,
-    main_schedule.end_time,
-    main_schedule.movie_park_id,
-    movie_parks.name AS movie_park_name,
-    main_schedule.movie_id,
-    movies.name AS movie_name,
-    main_schedule.hall_id,
-    main_schedule.base_price,
-    main_schedule.vip_price
-   FROM movie_park.main_schedule
-     JOIN movie_park.movie_parks ON main_schedule.movie_park_id = movie_parks.id
-     JOIN movie_park.movies ON main_schedule.movie_id = movies.id;
+CREATE TABLE movie_park.roles (
+	id int4 NOT NULL,
+	description varchar NOT NULL,
+	permissions varchar NOT NULL,
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE movie_park.user_credentials (
+	email varchar NOT NULL,
+	"password" varchar NOT NULL,
+	"role" int4 NOT NULL,
+	PRIMARY KEY (email),
+	FOREIGN KEY ("role") REFERENCES movie_park."roles"(id)
+);

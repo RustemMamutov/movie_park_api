@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,9 @@ import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.security.AllowApiCreate;
+import ru.api.moviepark.security.AllowApiDelete;
+import ru.api.moviepark.security.AllowApiModify;
 import ru.api.moviepark.service.MovieParkClient;
 import ru.api.moviepark.web.CustomResponse;
 
@@ -34,12 +38,12 @@ import static ru.api.moviepark.web.CustomResponse.TABLE_FILLED;
 @RestController
 @Slf4j
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping("/movie-park")
-public class MovieParkRestController {
+@RequestMapping("/movie-park/api")
+public class ApiRestController {
 
     private final MovieParkClient movieParkClient;
 
-    public MovieParkRestController(MovieParkClient movieParkClient) {
+    public ApiRestController(MovieParkClient movieParkClient) {
         this.movieParkClient = movieParkClient;
     }
 
@@ -54,18 +58,21 @@ public class MovieParkRestController {
     }
 
     @PutMapping("/seances/places/block")
+    @AllowApiModify
     public ResponseEntity<CustomResponse> blockPlaces(@Valid @RequestBody BlockUnblockPlaceInput inputJson) {
         movieParkClient.blockOrUnblockPlaceOnSeance(inputJson.getSeanceId(), inputJson.getPlaceIdList(), true);
         return PLACES_BLOCKED.entity(HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/seances/places/unblock")
+    @AllowApiModify
     public ResponseEntity<CustomResponse> unblockPlaces(@Valid @RequestBody BlockUnblockPlaceInput inputJson) {
         movieParkClient.blockOrUnblockPlaceOnSeance(inputJson.getSeanceId(), inputJson.getPlaceIdList(), false);
         return PLACES_UNBLOCKED.entity(HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/seances/places/update-schedule")
+    @AllowApiModify
     public ResponseEntity<CustomResponse> updateScheduleTable(@RequestParam int days) {
         movieParkClient.updateScheduleTable(days);
         return TABLE_FILLED.entity(HttpStatus.ACCEPTED);
@@ -88,8 +95,15 @@ public class MovieParkRestController {
 
     @PostMapping("/seances/create")
     @ResponseStatus(HttpStatus.CREATED)
+    @AllowApiCreate
     public void createSeance(@Valid @RequestBody CreateSeanceInput inputJson) {
         movieParkClient.createNewSeance(inputJson);
+    }
+
+    @DeleteMapping("/seances/delete/{seanceId}")
+    @AllowApiDelete
+    public void deleteSeance(@PathVariable int seanceId) {
+        movieParkClient.deleteSeance(seanceId);
     }
 
     @GetMapping("/movies/all-by-period")

@@ -13,7 +13,7 @@ spring:
       # localhost database in docker container
       url: jdbc:postgresql://localhost:5432/trade_center
       username: postgres
-      password: password
+      password: movie_park_api_password
       driverClassName: org.postgresql.Driver
   jpa:
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
@@ -23,8 +23,8 @@ spring:
 cache:
   seance_info:
     flush_timeout: 10
-    flush_timeout_max: 30
     flush_timeout_min: 2
+    flush_timeout_max: 30
   rps:
     flush_timeout: 10
     lifetime: 120
@@ -32,7 +32,7 @@ cache:
 # actuator
 management:
   endpoints:
-    web.base-path: /movie-park-service
+    web.base-path: /movie-park/service
 #    web.exposure.include: env,info,health,httptrace,logfile,metrics,mappings
 #  HEALTH ENDPOINT
   endpoint:

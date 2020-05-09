@@ -17,4 +17,8 @@ public class Constants {
     public static final String MOVIE_PARKS_TABLE_NAME = "movie_parks";
 
     public static final String SEANCE_PLACES_TABLE_NAME = "seances_places";
+
+    public static final String USER_CREDENTIALS_TABLE_NAME = "user_credentials";
+
+    public static final String ROLES_TABLE_NAME = "roles";
 }
