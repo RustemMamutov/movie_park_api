@@ -10,7 +10,7 @@
     </parent>
     <groupId>ru.api.moviepark</groupId>
     <artifactId>movie_park_api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>release_2020_may</version>
     <packaging>jar</packaging>
 
     <name>Movie-park-API</name>
