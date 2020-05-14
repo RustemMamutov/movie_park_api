@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  mp_api_service:
+    image: mamutovrm1/mp_api_service_img:latest
+    ports:
+      - 9000:9000
+    depends_on:
+      - mp_api_db
+    environment:
+      spring.profiles.active: local
+      spring.datasource.local.url: jdbc:postgresql://mp_api_db:5432/trade_center
+
+  mp_api_db:
+    image: mamutovrm1/mp_api_testdb_img:latest
+    ports:
+      - 5432:5432
+    environment:
+      PGDATA: /opt/psql_data

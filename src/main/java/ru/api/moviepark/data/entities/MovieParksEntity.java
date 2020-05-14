@@ -9,8 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import static ru.api.moviepark.config.Constants.MOVIE_PARKS_TABLE_NAME;
-import static ru.api.moviepark.config.Constants.SCHEMA_NAME;
+import static ru.api.moviepark.env.Constants.MOVIE_PARKS_TABLE_NAME;
+import static ru.api.moviepark.env.Constants.SCHEMA_NAME;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,4 +24,9 @@ public class MovieParksEntity {
 
     @Column(name = "name")
     private String movieParkName;
+
+    public MovieParksEntity(int movieParkId) {
+        this.movieParkId = movieParkId;
+        this.movieParkName = "";
+    }
 }

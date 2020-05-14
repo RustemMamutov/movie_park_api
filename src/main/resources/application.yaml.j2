@@ -1,30 +1,42 @@
 ###################### RENDERED FROM JINJA TEMPLATE ######################
 
+spring.profiles.active: {{ spring_profile | default("local") }}
+server.port: {{ server_port | default(9000) }}
+
 spring:
   datasource:
-    # localhost database in docker container
-    url: {{ datasource_url }}
-    username: {{ datasource_username }}
-    password: {{ datasource_password }}
-    driverClassName: {{ datasource_driverClassName }}
+    prod:
+      # real database
+      url: {{ datasource_url | default("url") }}
+      username: {{ datasource_username | default("username") }}
+      password: {{ datasource_password | default("password") }}
+      driverClassName: {{ datasource_driverClassName | default("driver") }}
+    local:
+      # localhost database in docker container
+      url: jdbc:postgresql://localhost:5432/trade_center
+      username: postgres
+      password: movie_park_api_password
+      driverClassName: org.postgresql.Driver
   jpa:
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
     show-sql: true
     hibernate.ddl-auto: validate
 
-server.port: {{ server_port }}
-
-max.cache.life.time: {{ max_cache_life_time }}
-min.cache.life.time: {{ min_cache_life_time }}
-seance.info.cache.flush.timeout: {{ seance_info_cache_flush_timeout }}
-rps.map.flush.timeout: {{ rps_map_flush_timeout }}
-rps.life.time: {{ rps_life_time }}
+cache:
+  seance_info:
+    flush_timeout: {{ seance_info_cache_flush_timeout | default(10) }}
+    flush_timeout_min: {{ seance_info_cache_flush_timeout_min | default(2) }}
+    flush_timeout_max: {{ seance_info_cache_flush_timeout_max | default(30) }}
+  rps:
+    flush_timeout: {{ rps_flush_timeout | default(10) }}
+    lifetime: {{ rps_lifetime | default(120) }}
 
 # actuator
 management:
   endpoints:
-    web.base-path: /movie_park_service
-    # web.exposure.include: *
-    # HEALTH ENDPOINT
+    web.base-path: /movie-park/service
+#    web.exposure.include: env,info,health,httptrace,logfile,metrics,mappings
+#  HEALTH ENDPOINT
+  endpoint:
     health.show-details: always
   health.diskSpace.enabled: false

@@ -8,30 +8,12 @@
         </encoder>
     </appender>
 
-    <property name="LOG_DIR" value="C:/Users/user/idea/movie_park_api/src/main/resources"/>
-
-    <appender name="movieParkLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${pattern}</pattern>
-        </encoder>
-
-        <file>${LOG_DIR}/movie_park.log</file>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_DIR}/archive/%d{yyyy-MM-dd}.%i.log.gz</FileNamePattern>
-            <totalSizeCap>100Mb</totalSizeCap>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>10Mb</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-    </appender>
-
     <root level="INFO">
         <appender-ref ref="console"/>
     </root>
 
     <logger name="ru.api.moviepark" level="DEBUG" additivity="false">
-        <appender-ref ref="movieParkLog"/>
+        <appender-ref ref="console"/>
     </logger>
 
 </configuration>
