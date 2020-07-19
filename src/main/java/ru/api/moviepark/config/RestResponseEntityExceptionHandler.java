@@ -1,4 +1,4 @@
-package ru.api.moviepark.web;
+package ru.api.moviepark.config;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.TypeMismatchException;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.api.moviepark.exceptions.MyInvalidInputException;
+import ru.api.moviepark.web.ApiError;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 

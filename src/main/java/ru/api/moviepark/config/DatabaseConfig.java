@@ -1,4 +1,4 @@
-package ru.api.moviepark.data.config;
+package ru.api.moviepark.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;

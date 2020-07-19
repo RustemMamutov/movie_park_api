@@ -40,43 +40,43 @@ public class CommandCheckerUtilTest {
     @Test
     public void Should_Return_InvalidTimePeriod_When_InvalidPeriodIsGiven() {
         setTimePeriod(seanceInput, LocalTime.of(8, 30), LocalTime.of(9, 10));
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
 
         setTimePeriod(seanceInput, LocalTime.of(9, 10), LocalTime.of(10, 30));
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
 
         setTimePeriod(seanceInput, LocalTime.of(10, 30), LocalTime.of(10, 50));
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
 
         setTimePeriod(seanceInput, LocalTime.of(8, 50), LocalTime.of(10, 50));
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
     }
 
     @Test
     public void Should_Return_InvalidDate_When_DateIsBeforeToday() {
         seanceInput.setDate(LocalDate.of(2000, 1, 1));
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
     }
 
     @Test
     public void Should_Return_InvalidHall_When_IncorrectHallIdIsGiven() {
         seanceInput.setHallId(9999);
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
     }
 
     @Test
     public void Should_Return_InvalidPrice_When_IncorrectPriceIsGiven() {
         seanceInput.setBasePrice(-100);
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
 
         seanceInput.setBasePrice(0);
-        assertThrows(MyInvalidInputException.class, () -> CheckInputUtil.checkCreateSeanceInput(seanceInput));
+        assertThrows(MyInvalidInputException.class, () -> InputPreconditionsUtil.checkCreateSeanceInput(seanceInput));
     }
 
     @Test
     public void Should_Not_ThrowException_When_CorrectInput() {
         seanceInput.setDate(testDate.plusDays(5));
-        CheckInputUtil.checkCreateSeanceInput(seanceInput);
+        InputPreconditionsUtil.checkCreateSeanceInput(seanceInput);
     }
 
     private void setTimePeriod(CreateSeanceInput seanceInput, LocalTime start, LocalTime finish) {
