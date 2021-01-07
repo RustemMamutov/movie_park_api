@@ -23,6 +23,7 @@ import ru.api.moviepark.security.AllowApiCreate;
 import ru.api.moviepark.security.AllowApiDelete;
 import ru.api.moviepark.security.AllowApiModify;
 import ru.api.moviepark.service.MovieParkClient;
+import ru.api.moviepark.swagger.AddToSwagger;
 import ru.api.moviepark.web.CustomResponse;
 
 import javax.validation.Valid;
@@ -38,6 +39,7 @@ import static ru.api.moviepark.web.CustomResponse.TABLE_FILLED;
 @RestController
 @Slf4j
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@AddToSwagger
 @RequestMapping("/movie-park/api")
 public class ApiRestController {
 

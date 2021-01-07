@@ -12,9 +12,11 @@ import ru.api.moviepark.actuator.RpsCalculatorUtil;
 import ru.api.moviepark.cache.SeancePlacesTtlCache;
 import ru.api.moviepark.security.AllowServiceModify;
 import ru.api.moviepark.security.AllowServiceRead;
+import ru.api.moviepark.swagger.AddToSwagger;
 
 @RestController
 @Slf4j
+@AddToSwagger
 @RequestMapping("/movie-park/service")
 public class ServiceRestController {
 
