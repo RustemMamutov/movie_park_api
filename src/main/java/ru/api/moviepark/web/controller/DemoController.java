@@ -13,7 +13,7 @@ import ru.api.moviepark.swagger.AddToSwagger;
 public class DemoController {
 
     @GetMapping
-    public String test() {
-        return "test";
+    public String demo() {
+        return "demo";
     }
 }

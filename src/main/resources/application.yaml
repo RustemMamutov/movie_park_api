@@ -1,5 +1,14 @@
 spring.profiles.active: local
-server.port: 9000
+
+server:
+#  port: 9443
+  port: 9000
+  ssl:
+#    enabled: true
+    enabled: false
+    key-store: classpath:movie_park.p12
+    key-store-password: password
+    key-store-type: PKCS12
 
 spring:
   datasource:
@@ -16,9 +25,13 @@ spring:
       password: movie_park_api_password
       driverClassName: org.postgresql.Driver
   jpa:
-    properties.hibernate.temp.use_jdbc_metadata_defaults: false
+    properties:
+      hibernate:
+        temp.use_jdbc_metadata_defaults: false
+        auto_quote_keyword: true
+        ddl-auto: validate
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-    hibernate.ddl-auto: validate
 
 cache:
   seance_info:
