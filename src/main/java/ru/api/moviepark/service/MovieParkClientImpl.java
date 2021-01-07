@@ -17,7 +17,7 @@ import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
-import ru.api.moviepark.util.CheckInputUtil;
+import ru.api.moviepark.util.InputPreconditionsUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 import static ru.api.moviepark.data.entities.MainScheduleEntity.createMainScheduleEntity;
 import static ru.api.moviepark.env.Constants.SCHEMA_NAME;
-import static ru.api.moviepark.util.CheckInputUtil.checkCreateSeanceInput;
+import static ru.api.moviepark.util.InputPreconditionsUtil.checkCreateSeanceInput;
 
 @Service
 @Slf4j
@@ -51,7 +51,7 @@ public class MovieParkClientImpl implements MovieParkClient {
 
     @Override
     public MainScheduleDTO getSeanceById(int seanceId) {
-        CheckInputUtil.checkSeanceIdExists(seanceId);
+        InputPreconditionsUtil.checkSeanceIdExists(seanceId);
         MainScheduleDTO result = SeanceInfoTtlCache.getSeanceById(seanceId);
         if (result == null) {
             List<MainScheduleEntity> entities = mainScheduleRepo.findAllSeancesInTheSameDate(seanceId);
@@ -145,7 +145,7 @@ public class MovieParkClientImpl implements MovieParkClient {
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteSeance(int seanceId) {
-        CheckInputUtil.checkSeanceIdExists(seanceId);
+        InputPreconditionsUtil.checkSeanceIdExists(seanceId);
         SeanceInfoTtlCache.clearCacheBySeanceId(seanceId);
         mainScheduleRepo.deleteById(seanceId);
         seancesPlacesRepo.deleteAllBySeanceId(seanceId);
@@ -162,12 +162,12 @@ public class MovieParkClientImpl implements MovieParkClient {
     }
 
     public List<HallsEntity> getHallPlacesInfo(int hallId) {
-        CheckInputUtil.checkHallIdExists(hallId);
+        InputPreconditionsUtil.checkHallIdExists(hallId);
         return HallsTtlCache.getElementsById(hallId);
     }
 
     public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
-        CheckInputUtil.checkSeanceIdExists(seanceId);
+        InputPreconditionsUtil.checkSeanceIdExists(seanceId);
         log.info("Getting full info for seance id = " + seanceId);
         if (SeancePlacesTtlCache.containsElementById(seanceId)) {
             return SeancePlacesTtlCache.getSeancePlacesInfoById(seanceId);
@@ -181,7 +181,7 @@ public class MovieParkClientImpl implements MovieParkClient {
     @Transactional
     @Override
     public synchronized void blockOrUnblockPlaceOnSeance(int seanceId, List<Integer> placeList, boolean blocked) {
-        CheckInputUtil.checkSeanceIdExists(seanceId);
+        InputPreconditionsUtil.checkSeanceIdExists(seanceId);
         log.info("Updating places {} in seance {}. Set blocked value: {}", placeList, seanceId, blocked);
         seancesPlacesRepo.blockOrUnblockThePlace(seanceId, placeList, blocked);
         SeancePlacesTtlCache.removeElement(seanceId);

@@ -1,4 +1,4 @@
-package ru.api.moviepark.security;
+package ru.api.moviepark.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;

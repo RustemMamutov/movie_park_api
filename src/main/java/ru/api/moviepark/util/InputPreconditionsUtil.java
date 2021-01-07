@@ -19,7 +19,7 @@ import static ru.api.moviepark.web.CustomResponse.INVALID_SEANCE_ID;
 import static ru.api.moviepark.web.CustomResponse.INVALID_START_END_TIME;
 import static ru.api.moviepark.web.CustomResponse.INVALID_TIME_PERIOD;
 
-public class CheckInputUtil {
+public class InputPreconditionsUtil {
 
     private static MainScheduleRepo mainScheduleRepo;
     private static HallsRepo hallsRepo;
@@ -29,24 +29,20 @@ public class CheckInputUtil {
     }
 
     public static void setHallsRepo(HallsRepo hallsRepo) {
-        CheckInputUtil.hallsRepo = hallsRepo;
+        InputPreconditionsUtil.hallsRepo = hallsRepo;
     }
 
     public static void checkSeanceIdExists(int seanceId) {
-        if (SeanceInfoTtlCache.containsElementById(seanceId)) {
-            return;
-        }
-        if (mainScheduleRepo.checkSeanceIdExists(seanceId)) {
+        if (SeanceInfoTtlCache.containsElementById(seanceId) ||
+                mainScheduleRepo.checkSeanceIdExists(seanceId)) {
             return;
         }
         throw new MyInvalidInputException(INVALID_SEANCE_ID);
     }
 
     public static void checkHallIdExists(int hallId) {
-        if (HallsTtlCache.containsElementById(hallId)) {
-            return;
-        }
-        if (hallsRepo.checkHallIdExists(hallId)) {
+        if (HallsTtlCache.containsElementById(hallId) ||
+                hallsRepo.checkHallIdExists(hallId)) {
             return;
         }
         throw new MyInvalidInputException(INVALID_HALL);
