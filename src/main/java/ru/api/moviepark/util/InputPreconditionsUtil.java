@@ -1,7 +1,5 @@
 package ru.api.moviepark.util;
 
-import ru.api.moviepark.cache.HallsTtlCache;
-import ru.api.moviepark.cache.SeanceInfoTtlCache;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
@@ -33,16 +31,14 @@ public class InputPreconditionsUtil {
     }
 
     public static void checkSeanceIdExists(int seanceId) {
-        if (SeanceInfoTtlCache.containsElementById(seanceId) ||
-                mainScheduleRepo.checkSeanceIdExists(seanceId)) {
+        if (mainScheduleRepo.checkSeanceIdExists(seanceId)) {
             return;
         }
         throw new MyInvalidInputException(INVALID_SEANCE_ID);
     }
 
     public static void checkHallIdExists(int hallId) {
-        if (HallsTtlCache.containsElementById(hallId) ||
-                hallsRepo.checkHallIdExists(hallId)) {
+        if (hallsRepo.checkHallIdExists(hallId)) {
             return;
         }
         throw new MyInvalidInputException(INVALID_HALL);

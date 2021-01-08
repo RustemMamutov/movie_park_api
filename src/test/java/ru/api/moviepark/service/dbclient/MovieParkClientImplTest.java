@@ -12,13 +12,10 @@ import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
-import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
-import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.service.MovieParkClient;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,27 +113,6 @@ public class MovieParkClientImplTest {
     }
 
     @Test
-    public void Should_CreateNewSeance_When_InputInfoIsGiven() {
-        CreateSeanceInput seanceInput = CreateSeanceInput.builder()
-                .date(testDate.plusDays(4))
-                .startTime(LocalTime.of(7, 30))
-                .endTime(LocalTime.of(8, 30))
-                .movieParkId(1)
-                .movieId(1)
-                .hallId(101)
-                .basePrice(100)
-                .vipPrice(200)
-                .build();
-
-        List<MainScheduleDTO> result = movieParkClient.getAllSeancesByDate(testDate.plusDays(4));
-        assertEquals(1, result.size());
-        movieParkClient.createNewSeance(seanceInput);
-
-        List<MainScheduleDTO> result2 = movieParkClient.getAllSeancesByDate(testDate.plusDays(4));
-        assertEquals(2, result2.size());
-    }
-
-    @Test
     public void Should_GetHallPlacesInfo_When_HallIdIsGiven() {
         Optional<List<HallsEntity>> result = hallsRepo.findAllByHallId(101);
         if (!result.isPresent()) {
@@ -171,22 +147,5 @@ public class MovieParkClientImplTest {
     public void Should_GetSeancePlacesInfo_When_SeanceIdIsGiven() {
         List<SeancePlacesEntity> result = seancesPlacesRepo.findAllBySeanceId(1);
         assertEquals(9, result.size());
-    }
-
-    @Test
-    public void Should_BlockOrUnblockPlaceOnSeance_WhenInputIsGiven() {
-        List<SeancePlacesEntity> result1 = movieParkClient.getSeancePlacesInfo(1);
-
-        BlockUnblockPlaceInput input = BlockUnblockPlaceInput.builder()
-                .seanceId(1)
-                .placeIdList(Arrays.asList(101, 102))
-                .build();
-
-        movieParkClient.blockOrUnblockPlaceOnSeance(input.getSeanceId(), input.getPlaceIdList(), true);
-
-        List<SeancePlacesEntity> result2 = movieParkClient.getSeancePlacesInfo(1);
-        long sum = result2.stream().filter(SeancePlacesEntity::getBlocked).count();
-
-        assertEquals(2, sum);
     }
 }

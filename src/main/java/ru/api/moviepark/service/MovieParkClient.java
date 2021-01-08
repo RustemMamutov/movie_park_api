@@ -13,11 +13,21 @@ public interface MovieParkClient {
 
     MainScheduleDTO getSeanceById(int seanceId);
 
+    /**
+     * Get info about all places in hall.
+     */
+    List<HallsEntity> getHallPlacesInfo(int hallId);
+
+    /**
+     * Get info about all places for current seance.
+     */
+    List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId);
+
+    List<MainScheduleDTO> getAllSeancesByDate(LocalDate date);
+
     List<MainScheduleDTO> getAllSeancesByPeriod(LocalDate periodStart, LocalDate periodEnd);
 
     Map<Integer, String> getAllMoviesByDate(LocalDate date);
-
-    List<MainScheduleDTO> getAllSeancesByDate(LocalDate date);
 
     Map<LocalDate, Map<Integer, String>> getAllMoviesByPeriod(LocalDate periodStart, LocalDate periodEnd);
 
@@ -31,16 +41,6 @@ public interface MovieParkClient {
      * Update seances for next days.
      */
     void updateScheduleTable(int days);
-
-    /**
-     * Get info about all places in hall.
-     */
-    List<HallsEntity> getHallPlacesInfo(int hallId);
-
-    /**
-     * Get info about all places for current seance.
-     */
-    List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId);
 
     /**
      * Block or unblock the places in hall for current seance.

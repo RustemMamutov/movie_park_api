@@ -1,14 +1,12 @@
 package ru.api.moviepark.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.api.moviepark.cache.HallsTtlCache;
-import ru.api.moviepark.cache.MoviesInfoTtlCache;
-import ru.api.moviepark.cache.SeanceInfoTtlCache;
-import ru.api.moviepark.cache.SeancePlacesTtlCache;
 import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
@@ -19,6 +17,7 @@ import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.util.InputPreconditionsUtil;
 
+import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.api.moviepark.config.CacheConfig.*;
 import static ru.api.moviepark.data.entities.MainScheduleEntity.createMainScheduleEntity;
 import static ru.api.moviepark.env.Constants.SCHEMA_NAME;
 import static ru.api.moviepark.util.InputPreconditionsUtil.checkCreateSeanceInput;
@@ -39,6 +39,9 @@ public class MovieParkClientImpl implements MovieParkClient {
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
 
+    @Resource
+    private MovieParkClient self;
+
     public MovieParkClientImpl(JdbcTemplate jdbcTemplate,
                                HallsRepo hallsRepo,
                                MainScheduleRepo mainScheduleRepo,
@@ -50,32 +53,39 @@ public class MovieParkClientImpl implements MovieParkClient {
     }
 
     @Override
+    @Cacheable(cacheNames = SEANCE_INFO_CACHE_BY_ID)
     public MainScheduleDTO getSeanceById(int seanceId) {
+        log.info("Getting seance by seance id = " + seanceId);
         InputPreconditionsUtil.checkSeanceIdExists(seanceId);
-        MainScheduleDTO result = SeanceInfoTtlCache.getSeanceById(seanceId);
-        if (result == null) {
-            List<MainScheduleEntity> entities = mainScheduleRepo.findAllSeancesInTheSameDate(seanceId);
-            SeanceInfoTtlCache.convertToDtoAndAdd(entities);
-            result = SeanceInfoTtlCache.getSeanceById(seanceId);
-        }
-        return result;
+        return mainScheduleRepo.findById(seanceId).get().convertToDto();
     }
 
     @Override
+    @Cacheable(value = HALLS_INFO_CACHE)
+    public List<HallsEntity> getHallPlacesInfo(int hallId) {
+        log.info("Getting all places for hall id = " + hallId);
+        InputPreconditionsUtil.checkHallIdExists(hallId);
+        return hallsRepo.findAllByHallId(hallId).get();
+    }
+
+    @Override
+    @Cacheable(value = SEANCE_PLACES_CACHE)
+    public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
+        log.info("Getting full info for seance id = " + seanceId);
+        InputPreconditionsUtil.checkSeanceIdExists(seanceId);
+        return seancesPlacesRepo.findAllBySeanceId(seanceId);
+    }
+
+    @Override
+    @Cacheable(value = SEANCE_INFO_CACHE_BY_DATE)
     public List<MainScheduleDTO> getAllSeancesByDate(LocalDate date) {
-        if (SeanceInfoTtlCache.containsElementByDate(date)) {
-            return new ArrayList<>(SeanceInfoTtlCache.getSeancesMapByDate(date).values());
-        }
-
         List<MainScheduleEntity> entities = mainScheduleRepo.findAllBySeanceDate(date);
-        List<MainScheduleDTO> result = MainScheduleEntity.convertToDtoList(entities);
-
-        SeanceInfoTtlCache.addSeanceInfo(result);
-        return result;
+        return MainScheduleEntity.convertToDtoList(entities);
     }
 
     @Override
-    public List<MainScheduleDTO> getAllSeancesByPeriod(LocalDate periodStart, LocalDate periodEnd) {
+    public List<MainScheduleDTO> getAllSeancesByPeriod(LocalDate periodStart,
+                                                       LocalDate periodEnd) {
         List<MainScheduleDTO> result = new ArrayList<>();
         while (periodStart.isBefore(periodEnd.plusDays(1))) {
             result.addAll(getAllSeancesByDate(periodStart));
@@ -86,26 +96,21 @@ public class MovieParkClientImpl implements MovieParkClient {
     }
 
     @Override
+    @Cacheable(value = MOVIES_INFO_CACHE)
     public Map<Integer, String> getAllMoviesByDate(LocalDate date) {
-        if (MoviesInfoTtlCache.containsElementByDate(date)) {
-            return MoviesInfoTtlCache.getElementByDate(date);
-        }
-
         List<MainScheduleDTO> entities = getAllSeancesByDate(date);
         Map<Integer, String> result = new HashMap<>();
         entities.forEach(dto -> result.putIfAbsent(dto.getMovieId(), dto.getMovieName()));
 
-        if (result.size() > 0) {
-            MoviesInfoTtlCache.addElement(date, result);
-        }
         return result;
     }
 
     @Override
-    public Map<LocalDate, Map<Integer, String>> getAllMoviesByPeriod(LocalDate periodStart, LocalDate periodEnd) {
+    public Map<LocalDate, Map<Integer, String>> getAllMoviesByPeriod(LocalDate periodStart,
+                                                                     LocalDate periodEnd) {
         Map<LocalDate, Map<Integer, String>> result = new HashMap<>();
         while (periodStart.isBefore(periodEnd.plusDays(1))) {
-            result.put(periodStart, getAllMoviesByDate(periodStart));
+            result.put(periodStart, self.getAllMoviesByDate(periodStart));
             periodStart = periodStart.plusDays(1);
         }
         return result;
@@ -136,9 +141,7 @@ public class MovieParkClientImpl implements MovieParkClient {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public synchronized void createNewSeance(CreateSeanceInput inputJson) {
         checkCreateSeanceInput(inputJson);
-
         MainScheduleEntity newSeanceEntity = createMainScheduleEntity(inputJson);
-        SeanceInfoTtlCache.clearCacheByDate(inputJson.getDate());
         mainScheduleRepo.save(newSeanceEntity);
     }
 
@@ -146,11 +149,11 @@ public class MovieParkClientImpl implements MovieParkClient {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteSeance(int seanceId) {
         InputPreconditionsUtil.checkSeanceIdExists(seanceId);
-        SeanceInfoTtlCache.clearCacheBySeanceId(seanceId);
         mainScheduleRepo.deleteById(seanceId);
         seancesPlacesRepo.deleteAllBySeanceId(seanceId);
     }
 
+    @Override
     @Transactional
     public void updateScheduleTable(int days) {
         try {
@@ -161,29 +164,13 @@ public class MovieParkClientImpl implements MovieParkClient {
         }
     }
 
-    public List<HallsEntity> getHallPlacesInfo(int hallId) {
-        InputPreconditionsUtil.checkHallIdExists(hallId);
-        return HallsTtlCache.getElementsById(hallId);
-    }
-
-    public List<SeancePlacesEntity> getSeancePlacesInfo(int seanceId) {
-        InputPreconditionsUtil.checkSeanceIdExists(seanceId);
-        log.info("Getting full info for seance id = " + seanceId);
-        if (SeancePlacesTtlCache.containsElementById(seanceId)) {
-            return SeancePlacesTtlCache.getSeancePlacesInfoById(seanceId);
-        }
-
-        List<SeancePlacesEntity> seanceFullInfo = seancesPlacesRepo.findAllBySeanceId(seanceId);
-        SeancePlacesTtlCache.addSeancePlacesInfo(seanceId, seanceFullInfo);
-        return seanceFullInfo;
-    }
-
-    @Transactional
     @Override
-    public synchronized void blockOrUnblockPlaceOnSeance(int seanceId, List<Integer> placeList, boolean blocked) {
+    @Transactional
+    @CacheEvict(value = SEANCE_PLACES_CACHE, key = "#seanceId")
+    public synchronized void blockOrUnblockPlaceOnSeance(int seanceId, List<Integer> placeList,
+                                                         boolean blocked) {
         InputPreconditionsUtil.checkSeanceIdExists(seanceId);
         log.info("Updating places {} in seance {}. Set blocked value: {}", placeList, seanceId, blocked);
         seancesPlacesRepo.blockOrUnblockThePlace(seanceId, placeList, blocked);
-        SeancePlacesTtlCache.removeElement(seanceId);
     }
 }
