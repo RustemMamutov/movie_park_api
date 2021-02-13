@@ -2,16 +2,20 @@ package ru.api.moviepark.service;
 
 import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.data.entities.HallsEntity;
+import ru.api.moviepark.data.entities.MoviesEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface MovieParkClient {
 
     MainScheduleDTO getSeanceById(int seanceId);
+
+    Map<Integer, MoviesEntity> getAllMoviesByIdSet(Set<Integer> idList);
 
     /**
      * Get info about all places in hall.

@@ -16,16 +16,13 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static ru.api.moviepark.config.CacheConfig.MOVIES_INFO_CACHE;
+import static org.junit.Assert.*;
+import static ru.api.moviepark.config.CacheConfig.MOVIES_INFO_BY_DATE_CACHE;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles("test")
-public class MoviesInfoTtlCacheTest {
+public class MoviesInfoByDateCacheTest {
 
     @Autowired
     private MovieParkClient movieParkClient;
@@ -35,17 +32,17 @@ public class MoviesInfoTtlCacheTest {
     @Autowired
     private ApplicationContext context;
 
-    private GuavaCache moviesInfoCache;
+    private GuavaCache moviesInfoByDateCache;
 
     @Before
     public void init(){
         CacheManager local = (CacheManager) context.getBean("cacheManager");
-        moviesInfoCache = (GuavaCache) local.getCache(MOVIES_INFO_CACHE);
+        moviesInfoByDateCache = (GuavaCache) local.getCache(MOVIES_INFO_BY_DATE_CACHE);
     }
 
     @Test
     public void Should_CacheAllMoviesByDate_When_ItIsGiven() {
-        assertNull(moviesInfoCache.get(testDate));
+        assertNull(moviesInfoByDateCache.get(testDate));
 
         Map<Integer, String> result = movieParkClient.getAllMoviesByDate(testDate);
         assertFalse(result.isEmpty());
@@ -71,7 +68,7 @@ public class MoviesInfoTtlCacheTest {
     }
 
     private Map<Integer, String> getFromCache(LocalDate date) {
-        return (Map<Integer, String>) moviesInfoCache.get(date).get();
+        return (Map<Integer, String>) moviesInfoByDateCache.get(date).get();
     }
 
     @Test

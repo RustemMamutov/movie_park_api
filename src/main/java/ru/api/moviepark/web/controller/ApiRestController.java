@@ -3,22 +3,14 @@ package ru.api.moviepark.web.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.data.entities.HallsEntity;
+import ru.api.moviepark.data.entities.MoviesEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.valueobjects.BlockUnblockPlaceInput;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
+import ru.api.moviepark.data.valueobjects.MoviesInfoInput;
 import ru.api.moviepark.security.AllowApiCreate;
 import ru.api.moviepark.security.AllowApiDelete;
 import ru.api.moviepark.security.AllowApiModify;
@@ -32,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import static ru.api.moviepark.env.Constants.dateTimeFormatter;
-import static ru.api.moviepark.web.CustomResponse.PLACES_BLOCKED;
-import static ru.api.moviepark.web.CustomResponse.PLACES_UNBLOCKED;
-import static ru.api.moviepark.web.CustomResponse.TABLE_FILLED;
+import static ru.api.moviepark.web.CustomResponse.*;
 
 @RestController
 @Slf4j
@@ -106,6 +96,11 @@ public class ApiRestController {
     @AllowApiDelete
     public void deleteSeance(@PathVariable int seanceId) {
         movieParkClient.deleteSeance(seanceId);
+    }
+
+    @PostMapping("/movies/all-by-id-set")
+    public Map<Integer, MoviesEntity> getAllMoviesByIdSet(@RequestBody MoviesInfoInput input) {
+        return movieParkClient.getAllMoviesByIdSet(input.getMovieIdSet());
     }
 
     @GetMapping("/movies/all-by-period")

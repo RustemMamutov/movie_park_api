@@ -17,6 +17,7 @@ public class CacheConfig {
 
     public final static String USER_CREDENTIAL_CACHE = "userCredentialCache";
     public final static String MOVIES_INFO_CACHE = "moviesInfoCache";
+    public final static String MOVIES_INFO_BY_DATE_CACHE = "moviesInfoByDateCache";
     public final static String HALLS_INFO_CACHE = "hallsInfoCache";
     public final static String SEANCE_INFO_CACHE_BY_DATE = "seanceInfoCacheByDate";
     public final static String SEANCE_INFO_CACHE_BY_ID = "seanceInfoCacheById";
@@ -30,8 +31,15 @@ public class CacheConfig {
     }
 
     @Bean
-    public Cache moviesInfoByDateCache() {
+    public Cache moviesInfoCache() {
         return new GuavaCache(MOVIES_INFO_CACHE, CacheBuilder.newBuilder()
+                .expireAfterWrite(3600, TimeUnit.SECONDS)
+                .build());
+    }
+
+    @Bean
+    public Cache moviesInfoByDateCache() {
+        return new GuavaCache(MOVIES_INFO_BY_DATE_CACHE, CacheBuilder.newBuilder()
                 .expireAfterWrite(3600, TimeUnit.SECONDS)
                 .build());
     }

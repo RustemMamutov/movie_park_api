@@ -10,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.api.moviepark.data.dto.MainScheduleDTO;
 import ru.api.moviepark.data.entities.HallsEntity;
 import ru.api.moviepark.data.entities.MainScheduleEntity;
+import ru.api.moviepark.data.entities.MoviesEntity;
 import ru.api.moviepark.data.entities.SeancePlacesEntity;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
+import ru.api.moviepark.data.repositories.MoviesRepo;
 import ru.api.moviepark.data.repositories.SeancesPlacesRepo;
 import ru.api.moviepark.data.valueobjects.CreateSeanceInput;
 import ru.api.moviepark.util.InputPreconditionsUtil;
@@ -20,10 +22,7 @@ import ru.api.moviepark.util.InputPreconditionsUtil;
 import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static ru.api.moviepark.config.CacheConfig.*;
 import static ru.api.moviepark.data.entities.MainScheduleEntity.createMainScheduleEntity;
@@ -38,18 +37,21 @@ public class MovieParkClientImpl implements MovieParkClient {
     private final HallsRepo hallsRepo;
     private final MainScheduleRepo mainScheduleRepo;
     private final SeancesPlacesRepo seancesPlacesRepo;
+    private final MoviesRepo moviesRepo;
 
     @Resource
-    private MovieParkClient self;
+    private MovieParkClientImpl self;
 
     public MovieParkClientImpl(JdbcTemplate jdbcTemplate,
                                HallsRepo hallsRepo,
                                MainScheduleRepo mainScheduleRepo,
-                               SeancesPlacesRepo seancesPlacesRepo) {
+                               SeancesPlacesRepo seancesPlacesRepo,
+                               MoviesRepo moviesRepo) {
         this.jdbcTemplate = jdbcTemplate;
         this.hallsRepo = hallsRepo;
         this.mainScheduleRepo = mainScheduleRepo;
         this.seancesPlacesRepo = seancesPlacesRepo;
+        this.moviesRepo = moviesRepo;
     }
 
     @Override
@@ -58,6 +60,19 @@ public class MovieParkClientImpl implements MovieParkClient {
         log.info("Getting seance by seance id = " + seanceId);
         InputPreconditionsUtil.checkSeanceIdExists(seanceId);
         return mainScheduleRepo.findById(seanceId).get().convertToDto();
+    }
+
+    @Cacheable(cacheNames = MOVIES_INFO_CACHE)
+    public MoviesEntity getMovieById(int id) {
+        log.info("get movie info by id = " + id);
+        return moviesRepo.findById(id).get();
+    }
+
+    @Override
+    public Map<Integer, MoviesEntity> getAllMoviesByIdSet(Set<Integer> idList) {
+        Map<Integer, MoviesEntity> result = new HashMap<>();
+        idList.forEach(id -> result.put(id, self.getMovieById(id)));
+        return result;
     }
 
     @Override
@@ -96,7 +111,7 @@ public class MovieParkClientImpl implements MovieParkClient {
     }
 
     @Override
-    @Cacheable(value = MOVIES_INFO_CACHE)
+    @Cacheable(value = MOVIES_INFO_BY_DATE_CACHE)
     public Map<Integer, String> getAllMoviesByDate(LocalDate date) {
         List<MainScheduleDTO> entities = getAllSeancesByDate(date);
         Map<Integer, String> result = new HashMap<>();

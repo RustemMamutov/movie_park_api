@@ -25,8 +25,12 @@ public class MoviesEntity {
     @Column(name = "name")
     private String movieName;
 
+    @Column(name = "base64_images")
+    private String base64Images;
+
     public MoviesEntity(int movieId) {
         this.movieId = movieId;
         this.movieName = "";
+        this.base64Images = "";
     }
 }
