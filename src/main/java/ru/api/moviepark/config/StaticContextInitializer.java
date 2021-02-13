@@ -2,10 +2,6 @@ package ru.api.moviepark.config;
 
 import org.springframework.context.annotation.Configuration;
 import ru.api.moviepark.actuator.RpsCalculatorUtil;
-import ru.api.moviepark.cache.HallsTtlCache;
-import ru.api.moviepark.cache.MoviesInfoTtlCache;
-import ru.api.moviepark.cache.SeanceInfoTtlCache;
-import ru.api.moviepark.cache.SeancePlacesTtlCache;
 import ru.api.moviepark.data.repositories.HallsRepo;
 import ru.api.moviepark.data.repositories.MainScheduleRepo;
 import ru.api.moviepark.env.MovieParkEnv;
@@ -32,16 +28,6 @@ public class StaticContextInitializer {
     public void initCaches() {
         InputPreconditionsUtil.setMainScheduleRepo(mainScheduleRepo);
         InputPreconditionsUtil.setHallsRepo(hallsRepo);
-
-        SeanceInfoTtlCache.init();
-
-        MoviesInfoTtlCache.init();
-
-        SeancePlacesTtlCache.setEnv(environment);
-        SeancePlacesTtlCache.init();
-
-        HallsTtlCache.setHallsRepo(hallsRepo);
-        HallsTtlCache.init();
     }
 
     @PostConstruct
